@@ -20,7 +20,6 @@ const ResetForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction<
         setLoading(true)
         actions.setSubmitting(false);
         handlePasswordReset(values).then(res =>{
-          // console.log(res,"final")
           if (res === 200) {
               Alert.alert("Password reset link has been sent to your email")
           }

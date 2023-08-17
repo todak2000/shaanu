@@ -1,14 +1,13 @@
 # Shaanu | Sharing is caring, one item at a time
 
-Shaanu is a mobile app that empowers neighbors to share unused food, household items with each other or even money, helping to alleviate the financial burden of everyday life in Nigeria. By connecting those with resources (who have enough to spare) to those in need, Shaanu aims to reduce household and food waste, while also fostering a spirit of community and cooperation. Whether it's a bag of rice, a jar of peanut butter, or a set of kitchen utensils, Shaanu provides a platform for neighbors to come together and support one another during these challenging times.
+Shaanu is a mobile app that empowers neighbors to share unused food, household items with each other or even money, helping to alleviate the financial burden of everyday life. By connecting those with resources (who have enough to spare) to those in need, Shaanu aims to reduce household and food waste, while also fostering a spirit of community and cooperation. Whether it's a bag of rice, a jar of peanut butter, or a set of kitchen utensils, Shaanu provides a platform for neighbors to come together and support one another during these challenging times.
 
 
 
 ## Features
 - 💎 User profiles: Users can create profiles showcasing their available items, including photos and descriptions.
 - 💎 Search function: Users can search for specific items by category, location, or keyword.
-- 💎 In-app messaging: Users can communicate with each other directly through the app to arrange pickup or drop-off of items.
-- 💎 Reviews and ratings: Users can leave reviews and ratings for each other after transactions, promoting accountability and trust within the community.
+- 💎 Drop-off/Pickup: Users can directly through the app arrange pickup or drop-off of items.
 - 💎 Donation feature: Users can choose to donate items they no longer need to charity or goodwill organizations.
 - 💎 Virtual inventory management: Users can keep track of their available items and request notifications when someone expresses interest in an item they have listed.
 - 💎 Integrated payment system: Users can securely transfer funds within the app to facilitate exchanges.

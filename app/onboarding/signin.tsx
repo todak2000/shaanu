@@ -21,7 +21,6 @@ const SigninForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction
         actions.setSubmitting(false);
         handleSignInAuth(values).then(res =>{
           setLoading(false)
-          // console.log(res,"final")
           if (res?.statusCode === 200) {
               setUserData(res?.userData)
           }

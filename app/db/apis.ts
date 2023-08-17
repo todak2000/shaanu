@@ -21,7 +21,7 @@ import {
   } from "firebase/auth";
 import { app, db }from './firebase'
 import * as Crypto from 'expo-crypto';
-
+import { useStore } from "../store";
 export type userDataProps = { 
     firstname: string; 
     lastname: string;  
@@ -30,6 +30,18 @@ export type userDataProps = {
     isVerified: boolean;
 } | null
 
+export type ItemProps = {
+    id?: string;
+    category: string;
+    name: string;
+    imageUrl: string[];
+    pickupAddress: string;
+    donor: string;
+    status: string;
+    reciever: string;
+    location: string;
+    interestedParties: string[];
+}
 const auth: any = getAuth(app);
 // 
 export const handleSignOut = async (): Promise<number> => {
@@ -37,13 +49,10 @@ export const handleSignOut = async (): Promise<number> => {
     try {
       const logout = await signOut(auth);
       statusCode = 200
-    //   console.log(statusCode, 'logout statusCode');
       return statusCode
     } catch (err) {
     
       statusCode = 501
-    //   console.log(statusCode, 'logout statusCode');
-    //   console.log(err, 'logout err');
       return statusCode
     }
 };
@@ -53,7 +62,6 @@ export const handleSignUpAuth = async (data: any):Promise<{statusCode: number, u
     let userData: userDataProps;
     try {
         const userCredentials = await createUserWithEmailAndPassword(auth, data.email, data.password);
-        // console.log(userCredentials, 'cred')
 
         if (userCredentials.user) {
             let id = `SHA${Crypto.randomUUID()}`;
@@ -77,7 +85,6 @@ export const handleSignUpAuth = async (data: any):Promise<{statusCode: number, u
             return {statusCode, userData}
         }  
       } catch (error: any) {
-        // console.log(error.message);
         switch (error.message) {
             case "Firebase: Error (auth/email-already-exists).":
                 statusCode = 409
@@ -99,8 +106,6 @@ export const handleSignInAuth = async (data: any): Promise<{statusCode: number, 
     let userData: userDataProps;
     try {
       const userCredentials = await signInWithEmailAndPassword(auth, data.email, data.password);
-
-    //   console.log(userCredentials.user.emailVerified, 'cred verified')
       const userDB = collection(db, "Users");
       const userQuery = query(userDB, where("email", "==", userCredentials.user?.email));
       const querySnapshot = await getDocs(userQuery);
@@ -118,7 +123,6 @@ export const handleSignInAuth = async (data: any): Promise<{statusCode: number, 
     } 
 
     } catch (error: any) {
-    //   console.log(error?.message);
       switch (error.message) {
         case "Firebase: Error (auth/user-not-found).":
             statusCode = 404
@@ -140,7 +144,6 @@ export const handlePasswordReset = async ({email}: {email: string}): Promise<num
     try {
       const reset = await sendPasswordResetEmail(auth, email);
       statusCode = 200
-    //   console.log(statusCode, 'reset statusCode');
       return statusCode
     } catch (error: any) {
         switch (error.message) {
@@ -152,29 +155,101 @@ export const handlePasswordReset = async ({email}: {email: string}): Promise<num
                 statusCode = 501
                 break;
         }
-    //   console.log(statusCode, 'reset statusCode');
-    //   console.log(error, 'reset err');
       return statusCode
     }
 };
 
+export const handleSearch = async (queryItem: string): Promise<{statusCode: number, searchResultArray: ItemProps[] | null} | undefined>  => {
+    let statusCode: number;
+    let searchResultArray:ItemProps[] = [];
+    try {
+      const boardDB = collection(db, "Inventory");
+      const searchQuery = query(boardDB);
+      const querySnapshot: any = await getDocs(searchQuery);
+      if (querySnapshot.docs.length > 0) {
+        querySnapshot.docs.filter((initDoc: any) => initDoc.data().name.toLocaleLowerCase().includes(queryItem.toLocaleLowerCase())).map((doc: any) =>{
+            searchResultArray.push({
+                id: doc.id,
+                category: doc.data().category,
+                name: doc.data().name,
+                imageUrl: doc.data().imageUrl,
+                pickupAddress: doc.data().pickupAddress,
+                donor: doc.data().donor,
+                status: doc.data().status,
+                reciever: doc.data().reciever,
+                location: doc.data().location,
+                interestedParties: doc.data().interestedParties,
+            });
+        })
+        
+      }
+      statusCode = 200;
+      return {statusCode, searchResultArray};
+    } catch (err) {
+      statusCode = 501;
+      return {statusCode, searchResultArray};
+    }
+  };
 
-const provider = new GoogleAuthProvider();
-// Google Auth
-export const handleGoogleAuth = async (): Promise<{user: any} | undefined> => {
-  try {
-    const userCredentials = await signInWithRedirect(auth, provider); //signInWithPopup(auth, provider);
-    // const credential: any =
-    //   GoogleAuthProvider.credentialFromResult(userCredentials);
-    console.log(userCredentials, 'cred')
-    // const user: any = userCredentials.user;
-    // if (user) {
+  export const handleDonate = async (data: any):Promise<{statusCode: number, message: string} | undefined>  => {
+    let statusCode: number;
+    let itemData: ItemProps | null;
+    let message: string;
+    const {userData} = useStore()
+    try {
+
+        if (userData) {
+            let id = `${Crypto.randomUUID()}`;
+            const newUser = doc(db, "Inventory", id);
+            itemData =  { 
+                category: data.category,
+                name: data.name,
+                imageUrl: data.imageUrl,
+                pickupAddress: data.pickupAddress,
+                donor: data.donor,
+                status: data.status,
+                reciever: data.reciever,
+                location:data.location,
+                interestedParties: data.interestedParties
+            }
+            await setDoc(
+            newUser,
+            itemData,
+            { merge: true }
+            ).then(()=>{
+                console.log("new item added")
+                
+            })
+            statusCode = 200;
+            message="Sucessful!"
+            return {statusCode, message}
+        }  
+      } catch (error: any) {
+       
+        statusCode = 501
+        message="Oops! Something went wrong."
+        return {statusCode, message}
+      }
       
-    //   console.log(user, "sdsds");
-    //   return user;
-    // }
-    return ;
-  } catch (err) {
-    console.log(err);
-  }
 };
+
+// export const handleSearch = async ({value}: {value: string}): Promise<number> => {
+//     let statusCode: number;
+//     try {
+//     //   const reset = await sendPasswordResetEmail(auth, email);
+//       statusCode = 200
+
+//       return statusCode
+//     } catch (error: any) {
+//         switch (error.message) {
+//             case "Firebase: Error (auth/user-not-found).":
+//                 statusCode = 404
+//                 break;
+
+//             default:
+//                 statusCode = 501
+//                 break;
+//         }
+//       return statusCode
+//     }
+// };

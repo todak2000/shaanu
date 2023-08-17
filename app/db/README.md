@@ -124,6 +124,76 @@ A promise that resolves with the following object:
   }
 ```
 
+## Search Donated Items (Protected)
+
+**handleSearch()**
+
+**Description:**
+
+The `handleSearch` function is used to search for specific item from the Donation Inventory database. It accepts the value of the query and return an array of results or none.
+**Parameters:**
+
+```
+  queryItem: string
+
+```
+
+**Returns:**
+
+A promise that resolves with the following object:
+
+```
+  {
+    statusCode: number, 
+    searchResultArray: {
+        id?: string | undefined;
+        category: string;
+        name: string;
+        imageUrl: string[];
+        pickupAddress: string;
+        donor: string;
+        status: string;
+        reciever: string;
+        location: string;
+        interestedParties: string[];
+    }[]
+  }
+```
+
+## Donate Item (Protected)
+
+**handleDonate()**
+
+**Description:**
+
+The `handleDonate` function is used to add donation item to the Donation Inventory database. It accepts an object containing one donated item data and return an array of results or none.
+**Parameters:**
+
+```
+    {
+    category: string;
+    name: string;
+    imageUrl: string[];
+    pickupAddress: string;
+    donor: string;
+    status: string;
+    reciever: string;
+    location:string;
+    interestedParties: string[];
+}
+
+```
+
+**Returns:**
+
+A promise that resolves with the following object:
+
+```
+  {
+    statusCode: number, 
+    message: string
+  }
+```
 
 **Status:**
 
@@ -143,7 +213,9 @@ The status of the responses. Possible values are:
 import { handlePasswordReset,
     handleSignInAuth,
     handleSignUpAuth,
-    handleSignOut
+    handleSignOut,
+    handleDonate,
+    handleSearch
  } from '../db/apis';
 ...
 <!-- signup -->
@@ -209,7 +281,36 @@ const sendResetpasswordEmail = async () => {
     else {
         console.log("Oops! an error occurred")
     }
-    setLoading(false)
+ })
+};
+
+<!-- search Donated Items -->
+const searchItem = async () => {
+  await handleSearch(text).then((result: any ) => {
+        setSearchArr(result?.searchResultArray)
+    });
+};
+
+<!-- Add Donation Item -->
+const addDonation = async () => {
+    const dat = {
+        category: "Food",
+        name:"Bread Toaster",
+        imageUrl: ["https://picsum.photos/200", "https://picsum.photos/200", "https://picsum.photos/200",],
+        pickupAddress:"No 5, Ade stree, Lagos",
+        donor: "23423232",
+        status: "Available",
+        reciever: "",
+        location:'LA',
+        interestedParties: ["sdsds2323", "dfd45dfg233", "34343sdss"]
+    }
+    handleDonate(dat).then(res =>{
+    if (res.statusCode === 200) {
+        console.log(res.message);
+    }
+    else {
+        console.log(res.message);
+    }
  })
 };
 

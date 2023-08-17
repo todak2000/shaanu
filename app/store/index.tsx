@@ -7,19 +7,19 @@ import React, {
 } from "react";
 import { auth } from "../db/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-
-
-export type UserProp = {
-  name: string;
-};
+import { userDataProps } from "../db/apis";
+import useAsyncStorage from "../utils/hooks";
 
 export type StoreContextProps = {
-  userData: UserProp | null;
+  userData: userDataProps | null;
   setUserData: React.Dispatch<React.SetStateAction<any>>;
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   isRegistered: boolean;
   setIsRegistered: React.Dispatch<React.SetStateAction<boolean>>;
+  refreshing: boolean; 
+  setRefreshing:React.Dispatch<React.SetStateAction<boolean>>;
+  onRefresh: any;
 };
 
 const StoreContext = createContext<StoreContextProps>({
@@ -29,10 +29,14 @@ const StoreContext = createContext<StoreContextProps>({
   setLoading: () => null,
   isRegistered: false,
   setIsRegistered: () => null,
+  refreshing: false, 
+  setRefreshing: () => null,
+  onRefresh: () => null,
 });
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useAsyncStorage('userData', {});
+  const [refreshing, setRefreshing] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -42,19 +46,27 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       auth,
       (user: any) => {
         if (user) {
+
           // User is signed in, see docs for a list of available properties
           // https://firebase.google.com/docs/reference/js/firebase.User
-          setUserData(user);
+          // setUserData(user);
           setIsRegistered(true);
         } else {
           // User is signed out
-          setUserData(null);
+          setUserData({});
           setIsRegistered(false);
         }
       }
     );
       // console.log(unsubscribeFromAuthStatuChanged, "unsubscribeFromAuthStatuChanged")
     return unsubscribeFromAuthStatuChanged;
+  }, []);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
   }, []);
 
   const value = useMemo(
@@ -65,8 +77,11 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading,
       isRegistered,
       setIsRegistered,
+      refreshing, 
+      setRefreshing,
+      onRefresh
     }),
-    [userData, setUserData, loading, setLoading, isRegistered, setIsRegistered]
+    [userData, setUserData, loading, setLoading, isRegistered, setIsRegistered, refreshing, setRefreshing, onRefresh]
   );
 
   return (

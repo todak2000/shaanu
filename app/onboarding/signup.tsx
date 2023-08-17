@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
 import Button from '../../components/Button';
-import {useState} from 'react'
 import { Formik, FormikHelpers } from 'formik';
 import CustomTextInput from '../../components/TextInput';
 import { useStore } from '../store';
@@ -23,7 +22,6 @@ const SignupForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction
         setLoading(true)
         actions.setSubmitting(false);
         handleSignUpAuth(values).then(res =>{
-            // console.log(res,"final")
             Alert.alert("Welcome! kindly check your email to verify your account")
             if (res?.statusCode === 200) {
                 setUserData(res?.userData)

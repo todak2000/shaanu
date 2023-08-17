@@ -1,42 +1,46 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
+import { useEffect, useState } from "react";
+import { Text } from "../../components/Themed";
+import { useStore } from "../store";
+import Header from "../../components/Home/Header";
+import SearchBar from "../../components/Home/Search";
+import { ItemProps } from "../db/apis";
+import Loader from "../../components/Loader";
+import Wrapper from "../../components/Wrapper";
 
-import EditScreenInfo from '../../components/EditScreenInfo';
-import { Text, View } from '../../components/Themed';
-import { handleSignOut } from '../db/apis';
-import Button from '../../components/Button';
-import { useStore } from '../store';
+function HomeScreenView() {
+  const { loading, refreshing } = useStore();
+  const [searchArr, setSearchArr] = useState<ItemProps[] | null>(null);
 
-export default function TabOneScreen() {
-  const {loading} = useStore();
+  useEffect(() => {
+    setSearchArr(null);
+  }, [refreshing]);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-      <Button 
-                onPress={()=>handleSignOut()} 
-                title='Sign out' 
-                icon={false}
-                color=""
-                isLoading={loading}
-            />
-    </View>
+    <>
+      <Header />
+      <SearchBar setSearchArr={setSearchArr} />
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
+          {searchArr !== null ? (
+            <Text style={styles.title}>Search result</Text>
+          ) : (
+            <Text style={styles.title}>Home Screen</Text>
+          )}
+        </>
+      )}
+    </>
   );
 }
+const HomeScreen = Wrapper(HomeScreenView);
+
+export default HomeScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+    fontWeight: "bold",
   },
 });

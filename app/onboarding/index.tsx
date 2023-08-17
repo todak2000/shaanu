@@ -1,4 +1,4 @@
-import { StyleSheet, Alert } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Logo from '../../assets/images/svgs/logo';
 import { useState, useEffect } from 'react';
 import { Text, View } from '../../components/Themed';
