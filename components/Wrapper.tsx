@@ -42,7 +42,7 @@ const Wrapper = (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: "5%",
+    paddingTop: "15%",
     paddingLeft: "5%",
     paddingRight: "5%",
   },

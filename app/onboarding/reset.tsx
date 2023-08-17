@@ -6,7 +6,7 @@ import CustomTextInput from '../../components/TextInput';
 import { useStore } from '../store';
 import { handlePasswordReset } from '../db/apis';
 import { ResetSchema } from '../utils/yup';
-import { primaryRed } from '../../constants/Colors';
+import { primaryRed, primaryYellow } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
 interface FormValues {
@@ -14,7 +14,7 @@ interface FormValues {
   }
 
 const ResetForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction<number>>}) => {
-    const { loading, setLoading } = useStore();
+    const { loading, theme, setLoading } = useStore();
 
     const handleSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
         setLoading(true)
@@ -56,8 +56,9 @@ const ResetForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction<
                 onPress={()=>handleSubmit()} 
                 title='Send Email' 
                 icon={false}
-                color=""
+                color={theme === "dark" ? primaryYellow: 'black'}
                 isLoading={loading}
+                theme={theme}
             />
           </View>
         )}

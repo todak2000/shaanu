@@ -23,6 +23,8 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     Museo: require('../assets/fonts/MuseoModerno-VariableFont_wght.ttf'),
     MuseoRegular: require('../assets/fonts/MuseoModerno-Regular.ttf'),
+    MuseoBold: require('../assets/fonts/MuseoModerno-Bold.ttf'),
+    MuseoBoldItalic: require('../assets/fonts/MuseoModerno-BoldItalic.ttf'),
     ...FontAwesome.font,
   });
 
@@ -47,7 +49,7 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   
-
+// console.log(colorScheme, 'scehme')
   return (
     <StoreProvider>    
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

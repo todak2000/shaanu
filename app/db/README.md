@@ -195,6 +195,36 @@ A promise that resolves with the following object:
   }
 ```
 
+## Get Donation List (Protected)
+
+**handleDonationList()**
+
+**Description:**
+
+The `handleDonationList` function is used to get all donation items from the Donation Inventory database. It return an array of results or none.
+
+**Returns:**
+
+A promise that resolves with the following object:
+
+```
+  {
+    statusCode: number, 
+    resultArray:  {
+        id: string;
+        category: string;
+        name: string;
+        imageUrl: string[];
+        pickupAddress: string;
+        donor: string;
+        status: string;
+        reciever: string;
+        location: string;
+        interestedParties: string[];
+    }[]
+  }
+```
+
 **Status:**
 
 The status of the responses. Possible values are:
@@ -215,7 +245,8 @@ import { handlePasswordReset,
     handleSignUpAuth,
     handleSignOut,
     handleDonate,
-    handleSearch
+    handleSearch,
+    handleDonationList
  } from '../db/apis';
 ...
 <!-- signup -->
@@ -287,7 +318,7 @@ const sendResetpasswordEmail = async () => {
 <!-- search Donated Items -->
 const searchItem = async () => {
   await handleSearch(text).then((result: any ) => {
-        setSearchArr(result?.searchResultArray)
+        console.log(result)
     });
 };
 
@@ -304,6 +335,7 @@ const addDonation = async () => {
         location:'LA',
         interestedParties: ["sdsds2323", "dfd45dfg233", "34343sdss"]
     }
+
     handleDonate(dat).then(res =>{
     if (res.statusCode === 200) {
         console.log(res.message);
@@ -312,6 +344,13 @@ const addDonation = async () => {
         console.log(res.message);
     }
  })
+};
+
+<!-- Get all Donated Items -->
+const allDonatedItems = async () => {
+  await handleDonationList().then((result: any ) => {
+        console.log(result)
+    });
 };
 
 

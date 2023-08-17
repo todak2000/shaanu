@@ -2,20 +2,22 @@ import React from 'react';
 import { Pressable, Text, StyleSheet, GestureResponderEvent, Image } from 'react-native';
 import Google from '../assets/images/svgs/google';
 
+
 type Props = {
     onPress: (e: GestureResponderEvent | any ) => void;
     title: string;
     icon?: boolean;
     color?: string;
     isLoading: boolean;
+    theme: 'light' | 'dark';
   }
 
 
-  const Button = ({ onPress, title, icon, color, isLoading }: Props) => {
-    const dynamicStyles = styles(color);
-    
+  const Button = ({ onPress, title, icon, color, isLoading, theme }: Props) => {
+    const dynamicStyles = styles(color, theme);
+    // console.log(theme, 'col')
     return (
-      <Pressable style={dynamicStyles.button} onPress={onPress}>
+      <Pressable style={[dynamicStyles.button]} onPress={onPress}>
         {isLoading ? 
         <Text style={dynamicStyles.text}>Connecting ...</Text>
         :
@@ -28,7 +30,7 @@ type Props = {
     );
   };
 
-const styles = (color: string | any) => StyleSheet.create({
+const styles = (color: string | any, theme: 'light' | 'dark') => StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -44,7 +46,7 @@ const styles = (color: string | any) => StyleSheet.create({
     lineHeight: 21,
     fontFamily:"MuseoRegular",
     letterSpacing: 0.25,
-    color: 'white',
+    color: (theme === 'light' ? '#FFFFFF' : '#232323'),
   },
 });
 

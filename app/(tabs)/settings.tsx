@@ -4,9 +4,11 @@ import { Text } from '../../components/Themed';
 import Button from '../../components/Button';
 import { handleSignOut } from '../db/apis';
 import Wrapper from '../../components/Wrapper';
+import { primaryYellow } from '../../constants/Colors';
 
 function SettingsScreenView() {
-  const {loading} = useStore();
+  const {loading, theme} = useStore();
+  // console.log(theme.dark, 'theme')
   return (
     <>
       <Text style={styles.title}>Settings Screen</Text>
@@ -14,8 +16,9 @@ function SettingsScreenView() {
           onPress={()=>handleSignOut()} 
           title='Sign out' 
           icon={false}
-          color=""
+          color={theme === "dark" ? primaryYellow: 'black'}
           isLoading={loading}
+          theme={theme}
       />
     </>
   );

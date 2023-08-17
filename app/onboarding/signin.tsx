@@ -6,7 +6,7 @@ import CustomTextInput from '../../components/TextInput';
 import { useStore } from '../store';
 import { handleSignInAuth } from '../db/apis';
 import { SigninSchema } from '../utils/yup';
-import { primaryRed } from '../../constants/Colors';
+import { primaryRed, primaryYellow } from '../../constants/Colors';
 
 interface FormValues {
     email: string;
@@ -14,7 +14,7 @@ interface FormValues {
   }
 
 const SigninForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction<number>>}) => {
-    const {loading, setLoading, setUserData} = useStore();
+    const {loading, setLoading, setUserData, theme} = useStore();
 
     const handleSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
         setLoading(true)
@@ -68,8 +68,9 @@ const SigninForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction
                 onPress={()=>handleSubmit()} 
                 title='Sign in' 
                 icon={false}
-                color=""
+                color={theme === "dark" ? primaryYellow: 'black'}
                 isLoading={loading}
+                theme={theme}
             />
           </View>
         )}

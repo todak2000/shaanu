@@ -9,6 +9,7 @@ import { auth } from "../db/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { userDataProps } from "../db/apis";
 import useAsyncStorage from "../utils/hooks";
+import { useColorScheme } from 'react-native';
 
 export type StoreContextProps = {
   userData: userDataProps | null;
@@ -20,6 +21,7 @@ export type StoreContextProps = {
   refreshing: boolean; 
   setRefreshing:React.Dispatch<React.SetStateAction<boolean>>;
   onRefresh: any;
+  theme: any;
 };
 
 const StoreContext = createContext<StoreContextProps>({
@@ -32,6 +34,8 @@ const StoreContext = createContext<StoreContextProps>({
   refreshing: false, 
   setRefreshing: () => null,
   onRefresh: () => null,
+  theme: null,
+
 });
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
@@ -41,6 +45,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
 
+  const theme = useColorScheme();
   useEffect(() => {
     const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
       auth,
@@ -79,9 +84,10 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       setIsRegistered,
       refreshing, 
       setRefreshing,
-      onRefresh
+      onRefresh,
+      theme
     }),
-    [userData, setUserData, loading, setLoading, isRegistered, setIsRegistered, refreshing, setRefreshing, onRefresh]
+    [userData, setUserData, loading, setLoading, isRegistered, setIsRegistered, refreshing, setRefreshing, onRefresh, theme]
   );
 
   return (

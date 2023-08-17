@@ -7,13 +7,20 @@ import { ItemProps } from '../../app/db/apis';
 
 const SearchBar = ({setSearchArr}: {setSearchArr: React.Dispatch<React.SetStateAction<ItemProps[] | null>>}) => {
     const [searchText, setSearchText] = useState<string>('');
-const {setLoading} = useStore();
+const {setLoading, theme, refreshing} = useStore();
 
 useEffect(() => {
   if (searchText =='') {
     setSearchArr(null)
   }
 }, [searchText])
+
+useEffect(() => {
+  if (refreshing) {
+    setSearchText('')
+  }
+}, [refreshing])
+
 
     const updateSearch = async(text: string) => { 
         setSearchText(text);
@@ -27,8 +34,8 @@ useEffect(() => {
 
 //   const dat = {
 //     category: "Food",
-//     name:"Bread Toaster",
-//     imageUrl: ["https://picsum.photos/200", "https://picsum.photos/200", "https://picsum.photos/200",],
+//     name:"10 sachets of Tomatoe paste",
+//     imageUrl: ["https://vignette4.wikia.nocookie.net/simpsons/images/0/01/200px-Langdon_Alger.png/revision/latest?cb=20120815160236", "https://picsum.photos/200", "https://picsum.photos/200",],
 //     pickupAddress:"No 5, Ade stree, Lagos",
 //     donor: "23423232",
 //     status: "Available",
@@ -39,13 +46,14 @@ useEffect(() => {
 //   handleDonate(dat)
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: theme === "dark" ? "#232323": '#E5E5E5'}]}>
       <Ionicons name="search" size={20} color="gray" />
       <TextInput
         style={styles.input}
         value={searchText}
         onChangeText={updateSearch}
         placeholder="Search by Item e.g. Rice"
+        placeholderTextColor={theme === "dark" ? "#ffffff30": 'gray'}
         clearButtonMode="while-editing"
       />
     </View>
@@ -56,7 +64,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E5E5E5',
+    // backgroundColor: '#E5E5E5',
     borderRadius: 10,
     padding: 10,
     marginTop:20,

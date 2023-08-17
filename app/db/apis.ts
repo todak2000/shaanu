@@ -31,7 +31,6 @@ export type userDataProps = {
 } | null
 
 export type ItemProps = {
-    id?: string;
     category: string;
     name: string;
     imageUrl: string[];
@@ -42,6 +41,20 @@ export type ItemProps = {
     location: string;
     interestedParties: string[];
 }
+
+export type ItemPropsWithID = {
+    id: string;
+    category: string;
+    name: string;
+    imageUrl: string[];
+    pickupAddress: string;
+    donor: string;
+    status: string;
+    reciever: string;
+    location: string;
+    interestedParties: string[];
+}
+
 const auth: any = getAuth(app);
 // 
 export const handleSignOut = async (): Promise<number> => {
@@ -161,7 +174,7 @@ export const handlePasswordReset = async ({email}: {email: string}): Promise<num
 
 export const handleSearch = async (queryItem: string): Promise<{statusCode: number, searchResultArray: ItemProps[] | null} | undefined>  => {
     let statusCode: number;
-    let searchResultArray:ItemProps[] = [];
+    let searchResultArray:ItemPropsWithID[] = [];
     try {
       const boardDB = collection(db, "Inventory");
       const searchQuery = query(boardDB);
@@ -188,6 +201,38 @@ export const handleSearch = async (queryItem: string): Promise<{statusCode: numb
     } catch (err) {
       statusCode = 501;
       return {statusCode, searchResultArray};
+    }
+  };
+
+  export const handleDonationList = async (): Promise<{statusCode: number, resultArray: ItemPropsWithID[] | null} | undefined>  => {
+    let statusCode: number;
+    let resultArray:ItemPropsWithID[] = [];
+    try {
+      const boardDB = collection(db, "Inventory");
+      const searchQuery = query(boardDB);
+      const querySnapshot: any = await getDocs(searchQuery);
+      if (querySnapshot.docs.length > 0) {
+        querySnapshot.docs.map((doc: any) =>{
+            resultArray.push({
+                id: doc.id,
+                category: doc.data().category,
+                name: doc.data().name,
+                imageUrl: doc.data().imageUrl,
+                pickupAddress: doc.data().pickupAddress,
+                donor: doc.data().donor,
+                status: doc.data().status,
+                reciever: doc.data().reciever,
+                location: doc.data().location,
+                interestedParties: doc.data().interestedParties,
+            });
+        })
+        
+      }
+      statusCode = 200;
+      return {statusCode, resultArray};
+    } catch (err) {
+      statusCode = 501;
+      return {statusCode, resultArray};
     }
   };
 

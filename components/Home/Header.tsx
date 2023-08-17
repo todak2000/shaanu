@@ -8,7 +8,7 @@ import { primaryYellow } from '../../constants/Colors';
 
 const Header: React.FC = () => {
     const [curentLoc, setCurrentLoc] = useState("Searching...");
-    const {userData} = useStore();
+    const {userData, theme} = useStore();
 
     useEffect(() => {
         (async () => {
@@ -34,11 +34,11 @@ const Header: React.FC = () => {
         
         <View style={styles.left}>
             <FontAwesome5 name="location-arrow" size={15} color={primaryYellow} />
-            <Text style={styles.topText}>{curentLoc}</Text>
+            <Text style={[styles.topText, {color: theme === "dark" ? "#ccc": 'black'}]}>{curentLoc}</Text>
         </View>
         <View style={styles.left}>
         <MaterialIcons name="person-pin" size={20} color={primaryYellow} />
-            <Text style={styles.topText}>Hi {userData?.firstname}!</Text>
+            <Text style={[styles.topText, {color: theme === "dark" ? "#ccc": 'black'}]}>Hi {userData?.firstname}!</Text>
         </View>
     </View>
   );

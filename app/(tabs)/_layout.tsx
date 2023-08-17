@@ -2,8 +2,7 @@
 import { MaterialCommunityIcons, FontAwesome, SimpleLineIcons  } from '@expo/vector-icons';
 import { Link, Tabs } from 'expo-router';
 import { Pressable, useColorScheme } from 'react-native';
-import {useState}  from  'react'
-import Colors, { primaryRed, primaryYellow } from '../../constants/Colors';
+import Colors from '../../constants/Colors';
 import OnboardingScreen from '../onboarding';
 import { useStore } from '../store';
 

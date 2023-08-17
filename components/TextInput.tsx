@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TextInputProps, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-
+import { useStore } from '../app/store';
 interface CustomTextInputProps extends TextInputProps {
   customStyle?: object;
   isPassword?: boolean;
@@ -10,7 +10,7 @@ interface CustomTextInputProps extends TextInputProps {
 
 const CustomTextInput: React.FC<CustomTextInputProps> = ({ customStyle, isPassword, ...props }) => {
   const [showPassword, setShowPassword] = useState(false);
-
+  const {theme} = useStore();
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
   };
@@ -18,9 +18,11 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({ customStyle, isPasswo
   return (
     <View style={styles.container}>
       <TextInput
-        style={[styles.default, customStyle]}
+        style={[styles.default, customStyle, {color:theme === "dark" ? "#f0f0f0": 'black'}]}
         secureTextEntry={isPassword && !showPassword}
         {...props}
+        // placeholder='hi'
+        placeholderTextColor={theme === "dark" ? "#232323": 'black'}
       />
       {isPassword && (
         <TouchableOpacity onPress={handleTogglePassword} style={styles.icon}>

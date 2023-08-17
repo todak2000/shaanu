@@ -6,6 +6,7 @@ import CustomTextInput from '../../components/TextInput';
 import { useStore } from '../store';
 import { handleSignUpAuth } from '../db/apis';
 import { SignupSchema } from '../utils/yup';
+import { primaryYellow } from '../../constants/Colors';
 
 interface FormValues {
     firstname: string;
@@ -16,7 +17,7 @@ interface FormValues {
   }
 
 const SignupForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction<number>>}) => {
-    const {loading, setLoading, setUserData } = useStore();
+    const {loading, setLoading, theme, setUserData } = useStore();
 
     const handleSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
         setLoading(true)
@@ -90,9 +91,11 @@ const SignupForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction
                 onPress={()=>handleSubmit()} 
                 title='Sign up' 
                 icon={false}
-                color=""
+                color={theme === "dark" ? primaryYellow: 'black'}
                 isLoading={loading}
+                theme={theme}
             />
+          
           </View>
         )}
       </Formik>
