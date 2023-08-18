@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
 import Button from '../../components/Button';
 import { Formik, FormikHelpers } from 'formik';
@@ -18,7 +18,9 @@ interface FormValues {
 
 const SignupForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction<number>>}) => {
     const {loading, setLoading, theme, setUserData } = useStore();
-
+    // useEffect(() => {
+    //   setLoading(false);
+    // }, [])
     const handleSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
         setLoading(true)
         actions.setSubmitting(false);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
 import Button from '../../components/Button';
 import { Formik, FormikHelpers } from 'formik';
@@ -7,17 +7,26 @@ import { useStore } from '../store';
 import { handleSignInAuth } from '../db/apis';
 import { SigninSchema } from '../utils/yup';
 import { primaryRed, primaryYellow } from '../../constants/Colors';
-
+import { Redirect } from "expo-router";
 interface FormValues {
     email: string;
     password: string;
   }
 
 const SigninForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction<number>>}) => {
-    const {loading, setLoading, setUserData, theme} = useStore();
+    const {loading, setLoading, isRegistered, setUserData, theme} = useStore();
 
+    useEffect(() => {
+      
+    }, [isRegistered])
+
+    // useEffect(() => {
+    //   setLoading(false);
+    // }, [])
+    
     const handleSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
         setLoading(true)
+        
         actions.setSubmitting(false);
         handleSignInAuth(values).then(res =>{
           setLoading(false)
@@ -38,7 +47,9 @@ const SigninForm = ({setScreen}: {setScreen: React.Dispatch<React.SetStateAction
 
     }
 
-      
+    if (isRegistered) {
+      return <Redirect href={'/(tabs)'}/>
+    }    
   return (
     <View style={styles.container}>
       <Formik

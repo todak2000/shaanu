@@ -15,7 +15,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent:'center',
     borderRadius:40,
-    // backgroundColor: "#E5E5E5",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 5,
     width: 80
   },
   activeItem:{
@@ -57,7 +60,7 @@ const Categories = ({ data, setSelectedCategory, selectedCategory }: dataProps) 
       
       <View style={styles.container}>
         {data.map((item) => (
-            <TouchableOpacity style={selectedCategory?.category === item.category ? [styles.item, styles.activeItem]: [styles.item, {backgroundColor: theme === "dark" ? "#ffffff10": '#E5E5E5'}]} onPress={()=>setSelectedCategory(item)} key={item.id}>
+            <TouchableOpacity style={selectedCategory?.category === item.category ? [styles.item, styles.activeItem]: [styles.item, {backgroundColor: theme === "dark" ? "#ffffff10": '#E5E5E5', shadowColor: theme === "dark" ? "#000": '#000'}]} onPress={()=>setSelectedCategory(item)} key={item.id}>
             <>{item.icon}</>
             <Text style={styles.text}>{item.category}</Text>
           </TouchableOpacity>

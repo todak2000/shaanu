@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { useEffect, useState } from "react";
+import { StyleSheet, Pressable } from "react-native";
+import { useEffect, useState,  } from "react";
 import { Text, View } from "../../components/Themed";
 import { useStore } from "../store";
 import Header from "../../components/Home/Header";
@@ -10,32 +10,66 @@ import Wrapper from "../../components/Wrapper";
 import Categories from "../../components/Home/Category";
 import { categoryArr, itemsArray } from "../../constants/items";
 import GridList from "../../components/Home/GridList";
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { categoryProps } from "../../components/Home/Category";
+import { GridItem } from "../../components/Home/GridList";
+import { collection, DocumentData, query, where, orderBy, limit, startAfter, getDocs, } from 'firebase/firestore';
+import { db, app } from "../db/firebase";
 
-function HomeScreenView() {
-  const { loading, refreshing,theme, setLoading } = useStore();
+function HomeScreen() {
+  const { loading, theme, onRefresh, setLoading } = useStore();
   const [searchArr, setSearchArr] = useState<ItemPropsWithID[] | ItemProps[] |null>(null);
-  const [mainArr, setMainArr] = useState<ItemPropsWithID[] | ItemProps[]>([]);
-  const [backUpArr, setBackUpArr] = useState<ItemPropsWithID[] | ItemProps[]>([]);
+  // const [mainArr, setMainArr] = useState<ItemPropsWithID[] | ItemProps[]>([]);
+  const [backUpArr, setBackUpArr] = useState<GridItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<categoryProps | null>(null);
   const [type, setType] = useState<number>(0);
+  const [searchText, setSearchText] = useState<string>('');
 
-  async function fetchData() {
+  const [lastDoc, setLastDoc] = useState<DocumentData | null>(null);
+  const [data, setData] = useState<GridItem[]>([]);
+
+  const fetchData = async (afterDoc?: DocumentData | null) => {
     setLoading(true)
-    const data:any = await handleDonationList();
-    setMainArr(data?.resultArray);
-    setBackUpArr(data?.resultArray);
     setSearchArr(null);
-    setSelectedCategory(null)
+      setSelectedCategory(null)
+      setType(0)
+      setSearchText('')
+    try {
+      let searchQuery 
+      const boardDB = collection(db, "Inventory");
+      if (afterDoc) {
+        const initQuery = query(boardDB, where("status", "==", 'Available'), orderBy('__name__'), limit(2));
+        searchQuery = query(initQuery, startAfter(afterDoc));
+      }
+      else{
+        searchQuery = query(boardDB, where("status", "==", 'Available'), orderBy('__name__'), limit(2));
+      }
+      
+      const snapshot = await getDocs(searchQuery);
+
+      if (!snapshot.empty) {
+        setData(prevData => {
+          const uniqueIds = new Set(prevData.map(item => item.id));
+          const newData = snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() } as GridItem))
+            .filter(item => !uniqueIds.has(item.id));
+          return [...prevData, ...newData];
+        });
+        setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      }
+
+      
+    } catch (error) {
+      console.error(error);
+    }
     setLoading(false)
-    setType(0)
-  }
+  };
 
   useEffect(() => {
-    
-    fetchData();
-  }, [refreshing]);
+    handleDonationList().then((result: any) => {
+      setBackUpArr(result?.resultArray);
+    });
+  }, []);
 
   useEffect(() => {
     if (selectedCategory === null) {
@@ -43,59 +77,75 @@ function HomeScreenView() {
     }
     else {
       setLoading(true);
-      const x  = backUpArr.filter(item  => item.category === selectedCategory.category)
-      setMainArr(x)
+      const x  = backUpArr?.filter(item  => item?.category === selectedCategory?.category)
+      setData(x)
       setLoading(false);
     }
   }, [selectedCategory])
-  
+
   useEffect(() => {
     if (searchArr) {
-     setMainArr(searchArr)
+      setData(searchArr)
      setType(1)
     }
 
 
-  }, [searchArr, mainArr]);
+  }, [searchArr, data]);
   
+ 
+
   return (
-    <>
+    <View style={styles.container}>
       <Header />
-      <SearchBar setSearchArr={setSearchArr} />
+      <SearchBar setSearchArr={setSearchArr} searchText={searchText} setSearchText={setSearchText}/>
       <Categories data={categoryArr} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
       {loading ? (
         <Loader />
       ) : (
-        <View style={[styles.lowerSection, {backgroundColor: theme === "dark" ? "transaprent": '#f0f0f0'}]}>
+        <View style={styles.lowerSection}>
           <Text style={styles.title}> {type === 0 ? 
           `${selectedCategory !== null ? selectedCategory?.category: 'All'} Donations close to you `
           : 
-          "Search result"
+          searchText !== '' ?
+          "Search result" : "All Donations close to you "
           }</Text>
-          {mainArr.length > 0 ? 
-          <GridList data={mainArr}/>
+          {data?.length > 0 ? 
+          <GridList 
+            data={data}
+            lastDoc={lastDoc}
+            setData={setData}
+            setLastDoc={setLastDoc}
+            fetchData={fetchData}
+          />
           :
-          <View style={[styles.noResult, {backgroundColor: theme === "dark" ? "transparent": '#f0f0f0'}]}>
+          <View style={styles.noResult}>
               <MaterialIcons name="search-off" size={100} color="#ccc" />
               {type === 0 ? 
-              <Text style={styles.noResultText}>Oops! there are no {selectedCategory !== null ? `${selectedCategory?.category} Donations close to you currently`: "Donations close to you currently"}</Text>
+              <Text style={[styles.noResultText,{color: theme === 'dark' ? '#ccc': "#232323"}]}>Oops! there are no {selectedCategory !== null ? `${selectedCategory?.category} Donations close to you currently`: "Donations close to you currently"}</Text>
               :
-              <Text style={styles.noResultText}>Oops! your search yield no result</Text>
+              <Text style={[styles.noResultText,{color: theme === 'dark' ? '#ccc': "#232323"}]}>Oops! your search yield no result</Text>
               }
-              
+              <Pressable style={styles.refresh} onPress={()=>fetchData()}>
+              <MaterialCommunityIcons name="database-refresh" size={20} color="black" />
+                <Text style={styles.noResultText}>Refresh</Text>
+                </Pressable>
               </View>
           }
         
         </View>
       )}
-    </>
+    </View>
   );
 }
-const HomeScreen = Wrapper(HomeScreenView);
-
 export default HomeScreen;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: "15%",
+    paddingLeft: "5%",
+    paddingRight: "5%",
+  },
   title: {
     fontSize: 18,
     fontWeight: "bold",
@@ -104,20 +154,29 @@ const styles = StyleSheet.create({
     marginTop:10
   },
   lowerSection:{
-    // backgroundColor:'#f0f0f0',
+    backgroundColor:'transparent',
     flex:1
   },
   noResult:{
     justifyContent: 'center',
     alignItems:'center',
-    // backgroundColor:'#f0f0f0',
+    backgroundColor:'transparent',
     marginTop:40
   },
   noResultText:{
     fontFamily:'MuseoRegular',
     fontSize:14,
-    marginTop:20,
+    marginLeft:10,
     textAlign:'center',
     color:'#232323'
+  },
+  refresh:{
+    flexDirection:'row',
+    justifyContent:'center',
+    alignItems:'center',
+    marginTop:20,
+    backgroundColor:'#ccc',
+    borderRadius:3,
+    padding:10,
   }
 });

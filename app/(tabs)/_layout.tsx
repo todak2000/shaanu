@@ -2,10 +2,10 @@
 import { MaterialCommunityIcons, FontAwesome, SimpleLineIcons  } from '@expo/vector-icons';
 import { Link, Tabs } from 'expo-router';
 import { Pressable, useColorScheme } from 'react-native';
-import Colors from '../../constants/Colors';
+import Colors, { primaryYellow } from '../../constants/Colors';
 import OnboardingScreen from '../onboarding';
 import { useStore } from '../store';
-
+import Loader from '../../components/Loader';
 
 function TabBarIcon(props: {
   name: any;
@@ -30,15 +30,20 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { isRegistered, loading } = useStore();
-  if (!isRegistered ) {
+  const { isRegistered, loading, theme } = useStore();
+
+  if (!isRegistered && !loading) {
     return <OnboardingScreen />
   }
-  else{
+  else if (!isRegistered && loading){
+    return <Loader />
+  }
+
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#232323",
+        tabBarActiveTintColor: theme === 'light' ? "#232323": primaryYellow,
       }}>
       <Tabs.Screen
         name="index"
@@ -88,5 +93,4 @@ export default function TabLayout() {
       />
     </Tabs>
   );
-}
 }

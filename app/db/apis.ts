@@ -22,6 +22,7 @@ import {
 import { app, db }from './firebase'
 import * as Crypto from 'expo-crypto';
 import { useStore } from "../store";
+import { GridItem } from "../../components/Home/GridList";
 export type userDataProps = { 
     firstname: string; 
     lastname: string;  
@@ -204,12 +205,14 @@ export const handleSearch = async (queryItem: string): Promise<{statusCode: numb
     }
   };
 
-  export const handleDonationList = async (): Promise<{statusCode: number, resultArray: ItemPropsWithID[] | null} | undefined>  => {
+
+  
+  export const handleDonationList = async (): Promise<{statusCode: number, resultArray: GridItem[] | null} | undefined>  => {
     let statusCode: number;
     let resultArray:ItemPropsWithID[] = [];
     try {
       const boardDB = collection(db, "Inventory");
-      const searchQuery = query(boardDB);
+      const searchQuery = query(boardDB, where("status", "==", 'Available'));
       const querySnapshot: any = await getDocs(searchQuery);
       if (querySnapshot.docs.length > 0) {
         querySnapshot.docs.map((doc: any) =>{

@@ -24,7 +24,7 @@ export type StoreContextProps = {
   theme: any;
 };
 
-const StoreContext = createContext<StoreContextProps>({
+export const StoreContext = createContext<StoreContextProps>({
   userData: null,
   setUserData: () => null,
   loading: false,
@@ -43,7 +43,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const [refreshing, setRefreshing] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [isRegistered, setIsRegistered] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(true);
 
   const theme = useColorScheme();
   useEffect(() => {

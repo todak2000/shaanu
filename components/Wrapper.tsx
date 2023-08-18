@@ -15,17 +15,28 @@ const Wrapper = (
 ) => {
   const WithRefreshControl = ({ children }: WithRefreshControlProps) => {
     const { onRefresh, refreshing } = useStore();
+    
     const onRefreshCallBack = useCallback(() => {
       onRefresh();
     }, []);
 
+    const onSwipeDown = (event:any) => {
+      console.log(event.nativeEvent.contentOffset.y);
+      if (event.nativeEvent.contentOffset.y < 0) { // you can replace zero with needed threshold
+        onRefreshCallBack(); //your refresh function
+        console.log("refere")
+      }
+    };
     return (
       <SafeAreaView style={styles.safeContainer}>
         <ScrollView
           contentContainerStyle={styles.container}
+          bounces={true}
+          // onScroll={onSwipeDown}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
+              progressViewOffset={50}
               onRefresh={onRefreshCallBack}
             />
           }

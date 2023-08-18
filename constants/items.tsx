@@ -1,5 +1,5 @@
 import * as Crypto from 'expo-crypto';
-import { MaterialCommunityIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, AntDesign, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { primaryRed } from './Colors';
 
 export const categoryArr = [
@@ -9,6 +9,7 @@ export const categoryArr = [
     { id: Crypto.randomUUID(), category: 'Cash', icon: <MaterialCommunityIcons name="piggy-bank-outline" size={24} color={primaryRed} /> },
     { id: Crypto.randomUUID(), category: 'Gadgets', icon: <MaterialCommunityIcons name="monitor-cellphone" size={24} color={primaryRed} /> },
     { id: Crypto.randomUUID(), category: 'Furnitures', icon: <MaterialCommunityIcons name="table-furniture" size={24} color={primaryRed} /> },
+    { id: Crypto.randomUUID(), category: 'Others', icon: <AntDesign name="questioncircle" size={24} color={primaryRed} /> },
   ];
 
 // export const categoryArr = ["Food", "Utensils", "Cash", "Wears", "Furnitures", "Gadgets"]

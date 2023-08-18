@@ -2,9 +2,11 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useColorScheme } from 'react-native';
-import { StoreProvider } from './store';
+import { StoreProvider, StoreContext } from './store';
+
+
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
@@ -48,17 +50,15 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-  
-// console.log(colorScheme, 'scehme')
+
   return (
     <StoreProvider>    
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-       
-        <Stack>
+      <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        
         </Stack>
-
 
       
     </ThemeProvider>

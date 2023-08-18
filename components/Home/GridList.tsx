@@ -1,12 +1,14 @@
-import React from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import React, {useEffect, useState, useCallback} from 'react';
+import { View, Text, FlatList, Pressable, RefreshControl, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Ionicons  } from '@expo/vector-icons';
 import { useStore } from '../../app/store';
-
-interface GridItem {
+import { DocumentData} from 'firebase/firestore';
+import { primaryYellow } from '../../constants/Colors';
+export interface GridItem {
   id?: string;
   name: string;
   imageUrl: string[];
+  category: string;
   donor: string;
   status: string;
   location: string;
@@ -15,6 +17,10 @@ interface GridItem {
 
 interface GridListProps {
   data: GridItem[];
+  lastDoc: DocumentData | null;
+  setData: React.Dispatch<React.SetStateAction<GridItem[]>>;
+  setLastDoc: React.Dispatch<React.SetStateAction<DocumentData|null>>;
+  fetchData:(data?:DocumentData)=>void;
 }
 
 const styles = StyleSheet.create({
@@ -22,13 +28,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     overflow: 'hidden',
-    // backgroundColor:"#f0f0f0",
     justifyContent:"space-between",
+  },
+  loadingMore:{
+    padding :16,
+    alignItems :'center'
   },
   item: {
     borderRadius:10,
     marginBottom: 10,
-    backgroundColor:"#fff",
+    
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 5,
   },
   imageContainer: {
     flexDirection: 'row',
@@ -64,13 +77,46 @@ const styles = StyleSheet.create({
   }
 });
 
-const GridList = ({ data }: GridListProps) => {
+const wait = (timeout: number) => {
+  return new Promise(resolve => setTimeout(resolve, timeout));
+}
+
+const GridList = ({ data, lastDoc, setData, setLastDoc,fetchData }: GridListProps) => {
     const {theme} = useStore();
+    const [refreshing, setRefreshing] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    const onRefresh = () => {
+      setRefreshing(true);
+      setData([]);
+      setLastDoc(null);
+      fetchData();
+      wait(2000).then(() => setRefreshing(false));
+    };
+  
+    const onRefreshCallBack = useCallback(() => {
+      onRefresh();
+    }, []);
+
+    const loadMoreData = () => {
+      if (!loadingMore && lastDoc) {
+        setLoadingMore(true);
+        fetchData(lastDoc);
+        wait(2000).then(() => setLoadingMore(false));
+      }
+    };
+
+    const handleDetails = (item:any) => {
+      console.log(item)
+    }
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <View style={[styles.container, {backgroundColor: theme === "dark" ? "transparent": '#f0f0f0'}]}>
-        {data.map((item) => (
-          <View key={item.id} style={[styles.item, {backgroundColor: theme === "dark" ? "#ccc": '#fff'}]}>
+    <FlatList
+    style={{marginBottom:20}}
+      showsVerticalScrollIndicator={false}
+      data={data}
+      keyExtractor={(item:any) => item.id}
+      renderItem={({ item }) => (
+          <Pressable onPress={()=>handleDetails(item)}  key={item.id} style={[styles.item, {backgroundColor: theme === "dark" ? "#ccc": '#f0f0f0', shadowColor: theme === "dark" ? "#fff": '#000'}]}>
             
            
               <View style={styles.imageContainer}>
@@ -95,11 +141,26 @@ const GridList = ({ data }: GridListProps) => {
                     </View>
                 </View>
             </View>
+          </Pressable>
+      )}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefreshCallBack}
+          // progressViewOffset={50}
+        />
+      }
+      onEndReached={data.length > 1 ? loadMoreData: null}
+      onEndReachedThreshold={0.05}
+      ListFooterComponent={
+        loadingMore ? (
+          <View style={styles.loadingMore}>
+            <Text>Loading more...</Text>
           </View>
-        ))}
-        
-      </View>
-    </ScrollView>
+        ) : null
+      }
+    />
+
   );
 };
 

@@ -5,8 +5,8 @@ import { handleSearch, handleDonate } from '../../app/db/apis';
 import { useStore } from '../../app/store';
 import { ItemProps } from '../../app/db/apis';
 
-const SearchBar = ({setSearchArr}: {setSearchArr: React.Dispatch<React.SetStateAction<ItemProps[] | null>>}) => {
-    const [searchText, setSearchText] = useState<string>('');
+const SearchBar = ({setSearchArr, searchText, setSearchText}: {setSearchArr: React.Dispatch<React.SetStateAction<ItemProps[] | null>>; searchText:string; setSearchText:React.Dispatch<React.SetStateAction<string>>}) => {
+    
 const {setLoading, theme, refreshing} = useStore();
 
 useEffect(() => {
@@ -49,7 +49,7 @@ useEffect(() => {
     <View style={[styles.container, {backgroundColor: theme === "dark" ? "#232323": '#E5E5E5'}]}>
       <Ionicons name="search" size={20} color="gray" />
       <TextInput
-        style={styles.input}
+        style={[styles.input, {color: theme === "dark" ? "#ccc": "#232323"}]}
         value={searchText}
         onChangeText={updateSearch}
         placeholder="Search by Item e.g. Rice"
