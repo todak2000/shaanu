@@ -2,10 +2,6 @@
 
 Shaanu is a mobile app that empowers neighbors to share unused food, household items with each other or even money, helping to alleviate the financial burden of everyday life. By connecting those with resources (who have enough to spare) to those in need, Shaanu aims to reduce household and food waste, while also fostering a spirit of community and cooperation. Whether it's a bag of rice, a jar of peanut butter, or a set of kitchen utensils, Shaanu provides a platform for neighbors to come together and support one another during these challenging times.
 
-![Simulator Screen Shot - iPhone 11 - 2023-08-17 at 20 20 49](https://github.com/todak2000/shaanu/assets/26861798/517f4376-0d9c-4ea6-9d70-b17ddf5eab39)
-
-![WhatsApp Image 2023-08-17 at 8 20 36 PM](https://github.com/todak2000/shaanu/assets/26861798/27bf23cd-9f89-4690-b9a4-4912422170bf)
-
 ## Features
 - 💎 User profiles: Users can create profiles showcasing their available items, including photos and descriptions.
 - 💎 Search function: Users can search for specific items by category, location, or keyword.

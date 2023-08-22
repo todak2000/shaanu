@@ -225,6 +225,157 @@ A promise that resolves with the following object:
   }
 ```
 
+
+## Select Single Donate Item (Protected)
+
+**handleSingleItem()**
+
+**Description:**
+
+The `handleSingleItem` function is used to select a single donated item. This is useful on the dashboard where all donated items are displayed. A user can click on any item and this api is involked. It accepts the item id and return an array of results or none.
+**Parameters:**
+
+```
+    {
+    id: string
+  }
+
+```
+
+**Returns:**
+
+A promise that resolves with the following object:
+
+```
+  {
+    statusCode: number, 
+    message: string
+  }
+```
+
+## Select Recipient - Donor (Protected)
+
+**handleInterest()**
+
+**Description:**
+
+The `handleInterest` function is used to select the recipient of a donated Item. Only a donor of an item can access this function or invoke it. It accepts the item id, the selected recipient id and return a message and statuscode.
+**Parameters:**
+
+```
+    {
+    id: string
+    userId: string
+  }
+
+```
+
+**Returns:**
+
+A promise that resolves with the following object:
+
+```
+  {
+    statusCode: number, 
+    message: string
+  }
+```
+
+##  Show Interest in an Item - Recipient (Protected)
+
+**handlePotentialInterest()**
+
+**Description:**
+
+The `handlePotentialInterest` function is used to indicate interest in an item by a potential recipient. Only a Potential Recipients of an item can access this function or invoke it. It accepts the item id, the selected recipient id and return a message and statuscode.
+**Parameters:**
+
+```
+    {
+    id: string
+    userId: string
+  }
+
+```
+
+**Returns:**
+
+A promise that resolves with the following object:
+
+```
+  {
+    statusCode: number, 
+    message: string
+  }
+```
+
+##  Show Disinterest in an Item - Recipient (Protected)
+
+**handleRemoveInterest()**
+
+**Description:**
+
+The `handleRemoveInterest` function is used to indicate disinterest in an item by a potential recipient. Only a Potential Recipients of an item can access this function or invoke it. It accepts the item id, the selected recipient id and return a message and statuscode.
+**Parameters:**
+
+```
+    {
+    id: string
+    userId: string
+  }
+
+```
+
+**Returns:**
+
+A promise that resolves with the following object:
+
+```
+  {
+    statusCode: number, 
+    message: string
+  }
+```
+
+## Get Catalog List (Protected)
+
+**handleCatalogList()**
+
+**Description:**
+
+The `handleCatalogList` function is used to get all donation items from the Donation Inventory database specific to a user (Reciepient or Donor). It accepts the user id and return an array of results or none.
+
+**Parameters:**
+
+```
+    {
+    userId: string
+  }
+
+```
+
+**Returns:**
+
+A promise that resolves with the following object:
+
+```
+  {
+    statusCode: number, 
+    resultArray:  {
+        id: string;
+        category: string;
+        name: string;
+        imageUrl: string[];
+        pickupAddress: string;
+        donor: string;
+        status: string;
+        reciever: string;
+        location: string;
+        interestedParties: string[];
+    }[]
+  }
+```
+
 **Status:**
 
 The status of the responses. Possible values are:
