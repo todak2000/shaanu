@@ -9,19 +9,38 @@ import { auth } from "../db/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { userDataProps } from "../db/apis";
 import useAsyncStorage from "../utils/hooks";
-import { useColorScheme } from 'react-native';
+import { useColorScheme } from "react-native";
+import { GridItem } from "../../components/Home/GridList";
+import {
+  collection,
+  DocumentData,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+} from "firebase/firestore";
+import { db } from "../db/firebase";
 
 export type StoreContextProps = {
   userData: userDataProps | null;
   setUserData: React.Dispatch<React.SetStateAction<any>>;
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  isRegistered: boolean;
-  setIsRegistered: React.Dispatch<React.SetStateAction<boolean>>;
-  refreshing: boolean; 
-  setRefreshing:React.Dispatch<React.SetStateAction<boolean>>;
+  isRegistered: any;
+  setIsRegistered: React.Dispatch<React.SetStateAction<any>>;
+  refreshing: boolean;
+  setRefreshing: React.Dispatch<React.SetStateAction<boolean>>;
   onRefresh: any;
   theme: any;
+  curentLoc: string;
+  setCurrentLoc: React.Dispatch<React.SetStateAction<string>>;
+  data: GridItem[];
+  setData: React.Dispatch<React.SetStateAction<GridItem[]>>;
+  fetchData: any;
+  lastDoc: any;
+  setLastDoc: React.Dispatch<React.SetStateAction<any>>;
 };
 
 export const StoreContext = createContext<StoreContextProps>({
@@ -31,19 +50,27 @@ export const StoreContext = createContext<StoreContextProps>({
   setLoading: () => null,
   isRegistered: false,
   setIsRegistered: () => null,
-  refreshing: false, 
+  refreshing: false,
   setRefreshing: () => null,
   onRefresh: () => null,
   theme: null,
-
+  curentLoc: "",
+  setCurrentLoc: () => null,
+  data: [],
+  setData: () => null,
+  fetchData: () => null,
+  lastDoc: null,
+  setLastDoc: () => null,
 });
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
-  const [userData, setUserData] = useAsyncStorage('userData', {});
+  const [userData, setUserData] = useAsyncStorage("userData", {});
   const [refreshing, setRefreshing] = useState(false);
-
+  const [curentLoc, setCurrentLoc] = useState("Searching...");
   const [loading, setLoading] = useState(false);
-  const [isRegistered, setIsRegistered] = useState(true);
+  const [isRegistered, setIsRegistered] = useState<any>();
+  const [data, setData] = useState<GridItem[]>([]);
+  const [lastDoc, setLastDoc] = useState<DocumentData | null>(null);
 
   const theme = useColorScheme();
   useEffect(() => {
@@ -51,10 +78,6 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       auth,
       (user: any) => {
         if (user) {
-
-          // User is signed in, see docs for a list of available properties
-          // https://firebase.google.com/docs/reference/js/firebase.User
-          // setUserData(user);
           setIsRegistered(true);
         } else {
           // User is signed out
@@ -63,9 +86,8 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     );
-      // console.log(unsubscribeFromAuthStatuChanged, "unsubscribeFromAuthStatuChanged")
     return unsubscribeFromAuthStatuChanged;
-  }, []);
+  });
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -73,6 +95,46 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       setRefreshing(false);
     }, 2000);
   }, []);
+
+  const fetchData = async (afterDoc?: DocumentData | null) => {
+    try {
+      let searchQuery;
+      const boardDB = collection(db, "Inventory");
+      if (afterDoc) {
+        const initQuery = query(
+          boardDB,
+          where("status", "==", "Available"),
+          orderBy("createdAt", "desc"),
+          limit(20)
+        );
+        searchQuery = query(initQuery, startAfter(afterDoc));
+      } else {
+        searchQuery = query(
+          boardDB,
+          where("status", "==", "Available"),
+          orderBy("createdAt", "desc"),
+          limit(20)
+        );
+      }
+
+      const snapshot = await getDocs(searchQuery);
+
+      if (!snapshot.empty) {
+        setData((prevData) => {
+          const uniqueIds = new Set(prevData.map((item) => item.id));
+          const newData = snapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() } as GridItem))
+            .filter((item) => !uniqueIds.has(item.id))
+            .filter((newItem) => newItem.interestedParties.length < 5);
+          return [...prevData, ...newData];
+        });
+        setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
+  };
 
   const value = useMemo(
     () => ({
@@ -82,12 +144,37 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading,
       isRegistered,
       setIsRegistered,
-      refreshing, 
+      refreshing,
       setRefreshing,
       onRefresh,
-      theme
+      theme,
+      curentLoc,
+      setCurrentLoc,
+      data,
+      setData,
+      fetchData,
+      lastDoc,
+      setLastDoc,
     }),
-    [userData, setUserData, loading, setLoading, isRegistered, setIsRegistered, refreshing, setRefreshing, onRefresh, theme]
+    [
+      userData,
+      setUserData,
+      loading,
+      setLoading,
+      isRegistered,
+      setIsRegistered,
+      refreshing,
+      setRefreshing,
+      onRefresh,
+      theme,
+      curentLoc,
+      setCurrentLoc,
+      data,
+      setData,
+      fetchData,
+      lastDoc,
+      setLastDoc,
+    ]
   );
 
   return (

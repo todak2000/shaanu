@@ -1,11 +1,21 @@
-import React, {useEffect, useState, useCallback} from 'react';
-import { View, Text, FlatList, Pressable, RefreshControl, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons, Ionicons  } from '@expo/vector-icons';
-import { useStore } from '../../app/store';
-import { DocumentData} from 'firebase/firestore';
-import { primaryYellow } from '../../constants/Colors';
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  Image,
+  StyleSheet,
+} from "react-native";
+import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
+import { useStore } from "../../app/store";
+import { DocumentData } from "firebase/firestore";
+import { router } from "expo-router";
+import { Naira } from "../Naira";
+import { primaryRed, primaryYellow } from "../../constants/Colors";
 export interface GridItem {
-  id?: string;
+  id?: string | any;
   name: string;
   imageUrl: string[];
   category: string;
@@ -13,154 +23,254 @@ export interface GridItem {
   status: string;
   location: string;
   interestedParties: string[];
+  pickupAddress?: string | any;
+  reciever?: string | any;
 }
 
 interface GridListProps {
   data: GridItem[];
   lastDoc: DocumentData | null;
   setData: React.Dispatch<React.SetStateAction<GridItem[]>>;
-  setLastDoc: React.Dispatch<React.SetStateAction<DocumentData|null>>;
-  fetchData:(data?:DocumentData)=>void;
+  setLastDoc: React.Dispatch<React.SetStateAction<DocumentData | null>>;
+  fetchData: (data?: DocumentData) => void;
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    overflow: 'hidden',
-    justifyContent:"space-between",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    overflow: "hidden",
+    justifyContent: "space-between",
   },
-  loadingMore:{
-    padding :16,
-    alignItems :'center'
+  loadingMore: {
+    padding: 16,
+    alignItems: "center",
+    width: "100%",
   },
   item: {
-    borderRadius:10,
+    borderRadius: 10,
     marginBottom: 10,
-    
+
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 5,
   },
   imageContainer: {
-    flexDirection: 'row',
-    overflow: 'hidden',
+    flexDirection: "row",
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 200,
-    resizeMode: 'cover',
-    borderRadius:10,
+    resizeMode: "cover",
+    borderRadius: 10,
   },
-  textContainer:{
+  textContainer: {
     padding: 10,
   },
-  name:{
-    fontFamily:"MuseoBold",
+  name: {
+    fontFamily: "MuseoBold",
     fontSize: 14,
-    marginTop:-5
+    marginTop: -5,
   },
-  textNormal:{
-    fontFamily:"MuseoRegular",
+  loadingText: {
+    fontFamily: "Museo",
+    fontSize: 16,
+  },
+  textNormal: {
+    fontFamily: "MuseoRegular",
     fontSize: 12,
-    marginLeft: 3
+    marginLeft: 3,
   },
-  statusView:{
-    flexDirection: 'row',
-    alignItems:'center',
+  statusView: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  statusViewTop:{
-    flexDirection: 'row',
-    alignItems:'center',
-    justifyContent:'space-between'
-  }
+  statusViewTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 3,
+    justifyContent: "space-between",
+  },
 });
 
 const wait = (timeout: number) => {
-  return new Promise(resolve => setTimeout(resolve, timeout));
-}
+  return new Promise((resolve) => setTimeout(resolve, timeout));
+};
 
-const GridList = ({ data, lastDoc, setData, setLastDoc,fetchData }: GridListProps) => {
-    const {theme} = useStore();
-    const [refreshing, setRefreshing] = useState(false);
-    const [loadingMore, setLoadingMore] = useState(false);
+const GridList = ({
+  data,
+  lastDoc,
+  setData,
+  setLastDoc,
+  fetchData,
+}: GridListProps) => {
+  const { theme, userData, setLoading } = useStore();
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-    const onRefresh = () => {
-      setRefreshing(true);
-      setData([]);
-      setLastDoc(null);
-      fetchData();
-      wait(2000).then(() => setRefreshing(false));
-    };
-  
-    const onRefreshCallBack = useCallback(() => {
-      onRefresh();
-    }, []);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setData([]);
+    setLastDoc(null);
+    fetchData();
+    wait(2000).then(() => setRefreshing(false));
+  };
 
-    const loadMoreData = () => {
-      if (!loadingMore && lastDoc) {
-        setLoadingMore(true);
-        fetchData(lastDoc);
-        wait(2000).then(() => setLoadingMore(false));
-      }
-    };
+  const onRefreshCallBack = useCallback(() => {
+    onRefresh();
+  }, []);
 
-    const handleDetails = (item:any) => {
-      console.log(item)
+  const loadMoreData = () => {
+    if (!loadingMore && lastDoc) {
+      setLoadingMore(true);
+      fetchData(lastDoc);
+      wait(2000).then(() => setLoadingMore(false));
     }
+  };
+
+  const handleDetails = (item: any) => {
+    setLoading(true);
+    router.push({
+      pathname: "/item",
+      params: {
+        id: item.id,
+      },
+    });
+  };
+
   return (
     <FlatList
-    style={{marginBottom:20}}
+      style={{ marginBottom: 20 }}
       showsVerticalScrollIndicator={false}
       data={data}
-      keyExtractor={(item:any) => item.id}
+      keyExtractor={(item: any) => item.id}
       renderItem={({ item }) => (
-          <Pressable onPress={()=>handleDetails(item)}  key={item.id} style={[styles.item, {backgroundColor: theme === "dark" ? "#ccc": '#f0f0f0', shadowColor: theme === "dark" ? "#fff": '#000'}]}>
-            
-           
-              <View style={styles.imageContainer}>
-              <Image
-                    source={{ uri: item.imageUrl[0] }}
-                    style={styles.image}
-                  />
+        <Pressable
+          onPress={() => handleDetails(item)}
+          key={item.id}
+          style={[
+            styles.item,
+            {
+              backgroundColor: theme === "dark" ? "#ffffff15" : "#f0f0f0",
+              shadowColor: theme === "dark" ? "#000" : "#000",
+            },
+          ]}
+        >
+          <View style={styles.imageContainer}>
+            {item.category === "Cash" ? (
+              <MaterialCommunityIcons
+                name="bank-outline"
+                style={{ padding: 20 }}
+                size={100}
+                color={theme === "dark" ? "#f0f0f0" : "#ccc"}
+              />
+            ) : (
+              <Image source={{ uri: item.imageUrl[0] }} style={styles.image} />
+            )}
+          </View>
+
+          <View style={styles.textContainer}>
+            {item.category === "Cash" ? (
+              <Text
+                style={[
+                  styles.name,
+                  { color: theme === "dark" ? "#f0f0f0" : "#000" },
+                ]}
+              >
+                <Naira
+                  style={{ fontSize: 10 }}
+                  color={theme === "dark" ? primaryYellow : primaryRed}
+                />{" "}
+                {item.name}
+              </Text>
+            ) : (
+              <Text
+                style={[
+                  styles.name,
+                  { color: theme === "dark" ? "#f0f0f0" : "#000" },
+                ]}
+              >
+                {item.name}
+              </Text>
+            )}
+            <View style={styles.statusViewTop}>
+              <View style={styles.statusView}>
+                <MaterialCommunityIcons
+                  name="progress-check"
+                  size={16}
+                  color="#08B72F"
+                />
+                <Text
+                  style={[
+                    styles.textNormal,
+                    { color: theme === "dark" ? "#f0f0f0" : "#000" },
+                  ]}
+                >
+                  {item.status}{" "}
+                </Text>
               </View>
-   
-            <View style={styles.textContainer}>
-                <Text style={styles.name}>{item.name}</Text>
-                <View style={styles.statusViewTop}>
-                    <View style={styles.statusView}>
-                        
-                        <MaterialCommunityIcons name="progress-check" size={20} color="#08B72F" />
-                        <Text style={styles.textNormal}>{item.status} </Text>
-                    </View>
-                    <View style={styles.statusView}>
-                        
-                        <Ionicons name="ios-location" size={20} color="#ccc" />
-                        <Text style={styles.textNormal}>{item.location}</Text>
-                    </View>
-                </View>
+              <View style={styles.statusView}>
+                <Ionicons
+                  name="ios-location"
+                  size={16}
+                  color={theme === "dark" ? "#f0f0f0" : "#ccc"}
+                />
+                <Text
+                  style={[
+                    styles.textNormal,
+                    { color: theme === "dark" ? "#f0f0f0" : "#000" },
+                  ]}
+                >
+                  {item.location}
+                </Text>
+              </View>
             </View>
-          </Pressable>
+            {userData?.id === item.donor && (
+              <View style={styles.statusViewTop}>
+                <View style={styles.statusView}>
+                  <MaterialCommunityIcons
+                    name="emoticon-kiss-outline"
+                    size={16}
+                    color="#E41B17"
+                  />
+                  <Text
+                    style={[
+                      styles.textNormal,
+                      { color: theme === "dark" ? "#f0f0f0" : "#000" },
+                    ]}
+                  >
+                    donated by you
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+        </Pressable>
       )}
       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefreshCallBack}
-          // progressViewOffset={50}
-        />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefreshCallBack} />
       }
-      onEndReached={data.length > 1 ? loadMoreData: null}
-      onEndReachedThreshold={0.05}
+      onEndReached={data.length > 1 ? loadMoreData : null}
+      onEndReachedThreshold={0.01}
       ListFooterComponent={
         loadingMore ? (
           <View style={styles.loadingMore}>
-            <Text>Loading more...</Text>
+            <Text
+              style={[
+                styles.loadingText,
+                { color: theme === "dark" ? "#f0f0f0" : "#232323" },
+              ]}
+            >
+              Loading more...
+            </Text>
           </View>
         ) : null
       }
     />
-
   );
 };
 

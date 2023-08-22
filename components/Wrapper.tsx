@@ -14,7 +14,7 @@ const Wrapper = (
   WrappedComponent: React.ComponentType<WithRefreshControlProps>
 ) => {
   const WithRefreshControl = ({ children }: WithRefreshControlProps) => {
-    const { onRefresh, refreshing } = useStore();
+    const { onRefresh, refreshing, theme } = useStore();
     
     const onRefreshCallBack = useCallback(() => {
       onRefresh();
@@ -28,11 +28,11 @@ const Wrapper = (
       }
     };
     return (
-      <SafeAreaView style={styles.safeContainer}>
+      <SafeAreaView style={[styles.safeContainer, { backgroundColor: theme === "dark" ? "transparent" : "#fff" }]}>
         <ScrollView
           contentContainerStyle={styles.container}
           bounces={true}
-          // onScroll={onSwipeDown}
+          onScroll={onSwipeDown}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -53,9 +53,6 @@ const Wrapper = (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: "15%",
-    paddingLeft: "5%",
-    paddingRight: "5%",
   },
   safeContainer: {
     flex: 1,

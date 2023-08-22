@@ -7,7 +7,7 @@ node_modules/
 .expo/
 dist/
 web-build/
-
+/components/Home/GridList_copy.tsx
 # Native
 *.orig.*
 *.jks

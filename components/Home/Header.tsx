@@ -1,66 +1,82 @@
-
-import React, { useState, useEffect } from 'react';
-import { View, Text,  StyleSheet } from 'react-native';
-import * as Location from 'expo-location';
-import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-import { useStore } from '../../app/store';
-import { primaryYellow } from '../../constants/Colors';
+import React, { useEffect } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import * as Location from "expo-location";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { useStore } from "../../app/store";
+import { primaryYellow } from "../../constants/Colors";
 
 const Header: React.FC = () => {
-    const [curentLoc, setCurrentLoc] = useState("Searching...");
-    const {userData, theme} = useStore();
+  const { userData, theme, curentLoc, setCurrentLoc } = useStore();
 
-    useEffect(() => {
-        (async () => {
-          let { status } = await Location.requestForegroundPermissionsAsync();
-          if (status !== 'granted') {
-            console.log('Permission to access location was denied')
-            return;
-          }
-          else{
-            let location = await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.Highest});
-            if (location){
-                const { latitude , longitude } = location.coords
-                let response = await Location.reverseGeocodeAsync({latitude,longitude});
-                let fullLoc = response[0].city+", "+response[0].region
-                setCurrentLoc(fullLoc)   
-            }
-          }
-        })();
-      }, []);
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+        return;
+      } else {
+        if (curentLoc === "Searching...") {
+          await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Highest,
+          }).then(async (location) => {
+            const { latitude, longitude } = location.coords;
+            let response = await Location.reverseGeocodeAsync({
+              latitude,
+              longitude,
+            });
+            let fullLoc = response[0].city + ", " + response[0].region;
+            setCurrentLoc(fullLoc);
+          });
+        }
+      }
+    })();
+    console.log(curentLoc, "current location");
+  }, [curentLoc]);
 
   return (
     <View style={styles.container}>
-        
-        <View style={styles.left}>
-            <FontAwesome5 name="location-arrow" size={15} color={primaryYellow} />
-            <Text style={[styles.topText, {color: theme === "dark" ? "#ccc": 'black'}]}>{curentLoc}</Text>
-        </View>
-        <View style={styles.left}>
+      <View style={styles.left}>
+        <Ionicons name="ios-location" size={15} color={primaryYellow} />
+        <Text
+          style={[
+            styles.topText,
+            { color: theme === "dark" ? "#ccc" : "black" },
+          ]}
+        >
+          {curentLoc}
+        </Text>
+      </View>
+      <View style={styles.left}>
         <MaterialIcons name="person-pin" size={20} color={primaryYellow} />
-            <Text style={[styles.topText, {color: theme === "dark" ? "#ccc": 'black'}]}>Hi {userData?.firstname}!</Text>
-        </View>
+        <Text
+          style={[
+            styles.topText,
+            { color: theme === "dark" ? "#ccc" : "black" },
+          ]}
+        >
+          Hi {userData?.firstname}!
+        </Text>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection:'row',
-    width:'100%',
-    justifyContent:'space-between',
-    alignItems:'center',
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  left:{
-    flexDirection:'row',
-    alignItems:'center',
+  left: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  topText:{
+  topText: {
     fontSize: 14,
     marginLeft: 5,
-    fontFamily:"MuseoRegular",
-  }
- 
+    fontFamily: "MuseoRegular",
+  },
 });
 
 export default Header;
