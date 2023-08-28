@@ -1,8 +1,7 @@
-
 import {
   MaterialCommunityIcons,
   FontAwesome,
-  SimpleLineIcons,
+  Ionicons,
 } from "@expo/vector-icons";
 import { Link, Tabs } from "expo-router";
 import { Pressable, useColorScheme } from "react-native";
@@ -11,10 +10,7 @@ import OnboardingScreen from "../onboarding";
 import { useStore } from "../store";
 import Loader from "../../components/Loader";
 
-function TabBarIcon(props: {
-  name: any;
-  color: string;
-}) {
+function TabBarIcon(props: { name: any; color: string }) {
   switch (props.name) {
     case "home":
       return (
@@ -32,10 +28,8 @@ function TabBarIcon(props: {
           {...props}
         />
       );
-    case "settings":
-      return (
-        <SimpleLineIcons size={28} style={{ marginBottom: -3 }} {...props} />
-      );
+    case "ios-person-circle-sharp":
+      return <Ionicons size={28} style={{ marginBottom: -3 }} {...props} />;
     case "format-list-text":
       return (
         <MaterialCommunityIcons
@@ -110,10 +104,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: "Profile",
           headerShown: false,
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="settings" color={color} />
+            <TabBarIcon name="ios-person-circle-sharp" color={color} />
           ),
         }}
       />

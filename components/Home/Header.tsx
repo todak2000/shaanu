@@ -1,37 +1,17 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import * as Location from "expo-location";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useStore } from "../../app/store";
 import { primaryYellow } from "../../constants/Colors";
 
 const Header: React.FC = () => {
-  const { userData, theme, curentLoc, setCurrentLoc } = useStore();
+  const { userData, theme, curentLoc, getLocation } = useStore();
 
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        return;
-      } else {
-        if (curentLoc === "Searching...") {
-          await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Highest,
-          }).then(async (location) => {
-            const { latitude, longitude } = location.coords;
-            let response = await Location.reverseGeocodeAsync({
-              latitude,
-              longitude,
-            });
-            let fullLoc = response[0].city + ", " + response[0].region;
-            setCurrentLoc(fullLoc);
-          });
-        }
-      }
-    })();
-    console.log(curentLoc, "current location");
-  }, [curentLoc]);
+    if (curentLoc === "Searching...") {
+      getLocation();
+    }
+  }, []);
 
   return (
     <View style={styles.container}>

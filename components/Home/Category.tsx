@@ -2,12 +2,11 @@ import React from "react";
 import {
   View,
   Text,
-  Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { primaryYellow, primaryRed } from "../../constants/Colors";
+import { primaryYellow } from "../../constants/Colors";
 import { useStore } from "../../app/store";
 
 const styles = StyleSheet.create({
@@ -34,7 +33,6 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: "MuseoRegular",
     fontSize: 11,
-    color: primaryRed,
   },
   activeText: {
     color: "#fff",
@@ -93,7 +91,12 @@ const Categories = ({
               key={item.id}
             >
               <>{item.icon}</>
-              <Text style={styles.text}>
+              <Text
+                style={[
+                  styles.text,
+                  { color: theme === "dark" ? primaryYellow : "#232323" },
+                ]}
+              >
                 {item.category === null ? "All" : item.category}
               </Text>
             </TouchableOpacity>

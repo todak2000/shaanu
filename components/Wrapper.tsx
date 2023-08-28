@@ -33,6 +33,7 @@ const Wrapper = (
           contentContainerStyle={styles.container}
           bounces={true}
           onScroll={onSwipeDown}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

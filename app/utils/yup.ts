@@ -38,4 +38,8 @@ export const DonateSchema = Yup.object().shape({
   name: Yup.string()
     .min(3, "Please enter at least 3 characters!")
     .required("This is required"),
+  pickupAddress: Yup.string().when("category", {
+    is: (name: string) => name !== "Cash",
+    then: () => Yup.string().required("Pickup address is required"),
+  }),
 });

@@ -13,7 +13,7 @@ type Props = {
   title: string;
   icon?: boolean;
   color?: string;
-  isLoading: boolean;
+  isLoading?: boolean;
   theme: "light" | "dark";
 };
 

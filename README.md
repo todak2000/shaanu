@@ -5,17 +5,14 @@ Shaanu is a mobile app that empowers neighbors to share unused food, household i
 ## Features
 - 💎 User profiles: Users can create profiles showcasing their available items, including photos and descriptions.
 - 💎 Search function: Users can search for specific items by category, location, or keyword.
-- 💎 Drop-off/Pickup: Users can directly through the app arrange pickup or drop-off of items.
+- 💎 Pickup: Users can directly through the app arrange pickup of items.
 - 💎 Donation feature: Users can choose to donate items they no longer need to charity or goodwill organizations.
 - 💎 Virtual inventory management: Users can keep track of their available items and request notifications when someone expresses interest in an item they have listed.
-- 💎 Integrated payment system: Users can securely transfer funds within the app to facilitate exchanges.
-- 💎 Location-based services: Users can specify their exact location or find items near them using geolocation features.
 - 💎 Social media integration: Users can share their experiences and discoveries on social media platforms like Facebook, Twitter, and Instagram.
-- 💎 Push notifications: Users receive timely updates on new listings, expiring items, and successful transactions.
-- 💎 Gamification elements: To encourage engagement and participation, the app could incorporate gamified features such as point systems, badges, or leaderboards.
+- 💎 Push notifications (Todo): Users receive timely updates on new listings, expiring items, and successful transactions.
+- 💎 Gamification elements (Todo): To encourage engagement and participation, the app could incorporate gamified features such as point systems, badges, or leaderboards.
 - 💎 Item tracking: Users can mark items as "gone" or "available again" to help maintain accurate inventories and avoid double booking.
 
-- 💎 Multi-language support: To cater to diverse user bases, the app could offer translations in the major languages in Nigeria.
 
 
 ## Built with

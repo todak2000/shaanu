@@ -16,7 +16,7 @@ export default function OnboardingScreen() {
   const [title, setTitle] = useState<string>("Sign In");
   const [subTitle, setSubTitle] = useState<string>("Welcome Back!");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { userData, isRegistered } = useStore();
+  const { isRegistered } = useStore();
 
   useEffect(() => {
     if (isRegistered) {
@@ -48,29 +48,10 @@ export default function OnboardingScreen() {
         setTitle("Reset Password");
         setSubTitle("Lets get back onboard!");
         break;
-      default:
-        setTitle("Sign In");
-        setSubTitle("Welcome Back!");
-        break;
     }
   }, [screen]);
 
   return (
-    // <SkeletonContent
-    //   containerStyle={styles.container}
-    //   animationDirection="horizontalLeft"
-    //   isLoading={true}
-    // >
-    //    <Logo color={primaryYellow}/>
-    //   <Text style={styles.title}>{title}</Text>
-    //   <Text style={styles.subTitle}>{subTitle}</Text>
-    //   {screen === 1 && <SigninForm setScreen={setScreen}/>
-
-    //   }
-    //   {screen === 2 && <SignupForm setScreen={setScreen}/>}
-    //   {screen === 3 && <ResetForm setScreen={setScreen}/>}
-    // </SkeletonContent>
-
     <>
       {isLoading ? (
         <StaticLoader />
@@ -79,7 +60,7 @@ export default function OnboardingScreen() {
           <Logo color={primaryYellow} />
           {screen !== 0 && (
             <>
-              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.title}>{title} </Text>
               <Text style={styles.subTitle}>{subTitle}</Text>
             </>
           )}

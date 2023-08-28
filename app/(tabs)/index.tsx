@@ -7,11 +7,19 @@ import SearchBar from "../../components/Home/Search";
 import { ItemPropsWithID, Item2Props, handleDonationList } from "../db/apis";
 import Loader from "../../components/Loader";
 import Categories from "../../components/Home/Category";
-import { categoryArr } from "../../constants/items";
 import GridList from "../../components/Home/GridList";
-import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { categoryProps } from "../../components/Home/Category";
 import { GridItem } from "../../components/Home/GridList";
+
+import * as Crypto from "expo-crypto";
+import {
+  MaterialCommunityIcons,
+  AntDesign,
+  FontAwesome5,
+  Ionicons,
+  MaterialIcons,
+} from "@expo/vector-icons";
+import { primaryYellow } from "../../constants/Colors";
 
 function HomeScreen() {
   const {
@@ -74,6 +82,91 @@ function HomeScreen() {
     }
   }, [searchArr, data]);
 
+  const categoryArr = [
+    {
+      id: Crypto.randomUUID(),
+      category: null,
+      icon: (
+        <AntDesign
+          name="CodeSandbox"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Food",
+      icon: (
+        <MaterialCommunityIcons
+          name="food-turkey"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Utensils",
+      icon: (
+        <FontAwesome5
+          name="utensils"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Wears",
+      icon: (
+        <Ionicons
+          name="ios-watch"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Cash",
+      icon: (
+        <MaterialCommunityIcons
+          name="piggy-bank-outline"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Gadgets",
+      icon: (
+        <MaterialCommunityIcons
+          name="monitor-cellphone"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Furnitures",
+      icon: (
+        <MaterialCommunityIcons
+          name="table-furniture"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Others",
+      icon: <AntDesign name="questioncircle" size={24} color={primaryYellow} />,
+    },
+  ];
+
   return (
     <View style={styles.container}>
       <Header />
@@ -102,6 +195,7 @@ function HomeScreen() {
               ? "Search result"
               : "All Donations close to you "}
           </Text>
+
           {data?.length > 0 ? (
             <GridList
               data={data}

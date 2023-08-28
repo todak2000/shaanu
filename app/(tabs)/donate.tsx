@@ -40,7 +40,8 @@ const DonateScreen = () => {
   const [isImageError, setIsImageError] = useState<string>("");
   const [localLoading, setLocalLoading] = useState(false);
   const [isSelect, setIselect] = useState(false);
-  const { theme, curentLoc, loading, setLoading, userData } = useStore();
+  const { theme, curentLoc, loading, setLoading, userData, getLocation } =
+    useStore();
 
   const resizeImage = async (
     initialUri: string,
@@ -120,8 +121,12 @@ const DonateScreen = () => {
   };
 
   useEffect(() => {
+    if (curentLoc === "Searching...") {
+      getLocation();
+    }
     setLoading(false);
   }, []);
+
   useEffect(() => {
     if (images.length > 0) {
       setIsImageError("");
@@ -362,7 +367,7 @@ const DonateScreen = () => {
               )}
               <View style={styles.bottom}>
                 <Button
-                  onPress={() => handleSubmit()}
+                  onPress={() => (loading ? null : handleSubmit())}
                   title="Submit"
                   icon={false}
                   color={theme === "dark" ? primaryYellow : "black"}

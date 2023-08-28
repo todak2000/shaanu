@@ -1,25 +1,17 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Wrapper from "../../components/Wrapper";
 import { Text, View } from "../../components/Themed";
 import { useStore } from "../store";
-import { handleCatalogList } from "../db/apis";
-import { GridItem } from "../../components/Home/GridList";
 import ItemList from "../../components/Catalog/ItemList";
 import { primaryYellow } from "../../constants/Colors";
 
 const title = "Catalog";
 
 function CatalogScreenView() {
-  const [itemsArr, setItemsArr] = useState<GridItem[]>([]);
-  const { userData, theme } = useStore();
+  const { theme, donorData, requestData } = useStore();
   const [activeTab, setActiveTab] = useState("One");
 
-  useEffect(() => {
-    handleCatalogList(userData?.id as string).then((res) => {
-      setItemsArr(res?.catalogList as GridItem[]);
-    });
-  });
   const handleTabPress = (tabName: string) => {
     setActiveTab(tabName);
   };
@@ -72,13 +64,7 @@ function CatalogScreenView() {
         </View>
 
         <View style={styles.contentContainer}>
-          <ItemList
-            dataa={itemsArr?.filter((item) =>
-              activeTab === "One"
-                ? item?.donor === userData?.id
-                : item?.interestedParties?.includes(userData?.id as string)
-            )}
-          />
+          <ItemList dataa={activeTab === "One" ? donorData : requestData} />
         </View>
       </View>
     </>
@@ -90,9 +76,6 @@ const CatalogScreen = Wrapper(CatalogScreenView);
 export default CatalogScreen;
 
 const styles = StyleSheet.create({
-  safeContainer: {
-    flex: 1,
-  },
   title: {
     fontSize: 18,
     fontFamily: "MuseoBold",
@@ -100,12 +83,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     marginTop: 20,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
-  },
-
   container: {
     flex: 1,
   },

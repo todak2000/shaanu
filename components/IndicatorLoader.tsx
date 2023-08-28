@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, View, ActivityIndicator } from "react-native";
 import { primaryYellow } from "../constants/Colors";
 
-const Loader = () => {
+const IndicatorLoader = () => {
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color={primaryYellow} />
@@ -18,4 +18,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Loader;
+export default IndicatorLoader;

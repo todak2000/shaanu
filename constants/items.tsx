@@ -5,30 +5,31 @@ import {
   FontAwesome5,
   Ionicons,
 } from "@expo/vector-icons";
-import { primaryRed } from "./Colors";
+
+import { primaryRed, primaryYellow } from "./Colors";
 
 export const categoryArr = [
   {
     id: Crypto.randomUUID(),
     category: null,
-    icon: <AntDesign name="CodeSandbox" size={24} color={primaryRed} />,
+    icon: <AntDesign name="CodeSandbox" size={24} color={primaryYellow} />,
   },
   {
     id: Crypto.randomUUID(),
     category: "Food",
     icon: (
-      <MaterialCommunityIcons name="food-turkey" size={24} color={primaryRed} />
+      <MaterialCommunityIcons name="food-turkey" size={24} color={primaryYellow} />
     ),
   },
   {
     id: Crypto.randomUUID(),
     category: "Utensils",
-    icon: <FontAwesome5 name="utensils" size={24} color={primaryRed} />,
+    icon: <FontAwesome5 name="utensils" size={24} color={primaryYellow} />,
   },
   {
     id: Crypto.randomUUID(),
     category: "Wears",
-    icon: <Ionicons name="ios-watch" size={24} color={primaryRed} />,
+    icon: <Ionicons name="ios-watch" size={24} color={primaryYellow} />,
   },
   {
     id: Crypto.randomUUID(),
@@ -37,7 +38,7 @@ export const categoryArr = [
       <MaterialCommunityIcons
         name="piggy-bank-outline"
         size={24}
-        color={primaryRed}
+        color={primaryYellow}
       />
     ),
   },
@@ -48,7 +49,7 @@ export const categoryArr = [
       <MaterialCommunityIcons
         name="monitor-cellphone"
         size={24}
-        color={primaryRed}
+        color={primaryYellow}
       />
     ),
   },
@@ -59,14 +60,14 @@ export const categoryArr = [
       <MaterialCommunityIcons
         name="table-furniture"
         size={24}
-        color={primaryRed}
+        color={primaryYellow}
       />
     ),
   },
   {
     id: Crypto.randomUUID(),
     category: "Others",
-    icon: <AntDesign name="questioncircle" size={24} color={primaryRed} />,
+    icon: <AntDesign name="questioncircle" size={24} color={primaryYellow} />,
   },
 ];
 

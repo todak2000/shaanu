@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { View, Pressable, StyleSheet, Alert } from "react-native";
 import { Text } from "../Themed";
-import { EvilIcons, MaterialIcons, Entypo } from "@expo/vector-icons";
+import { EvilIcons, MaterialIcons } from "@expo/vector-icons";
 import { useStore } from "../../app/store";
-import { router } from "expo-router";
 import { maskString } from "../../app/utils";
 import { primaryRed, primaryYellow } from "../../constants/Colors";
-import { handleInterest } from "../../app/db/apis";
-import Loader from "../Loader";
-
+import { handleInterest, handleRemoveReciever } from "../../app/db/apis";
+import IndicatorLoader from "../IndicatorLoader";
 interface interestPersonsProps {
   dataa: string[];
   status: string;
   reciever: string;
   itemId: string;
+  pickupAddress: string;
+  itemName: string;
   updateItem: () => void;
 }
 
@@ -84,20 +84,21 @@ const styles = StyleSheet.create({
   },
 });
 
-const wait = (timeout: number) => {
-  return new Promise((resolve) => setTimeout(resolve, timeout));
-};
-
 const InterestedPersonsList = ({
   dataa,
   status,
   reciever,
   itemId,
+  pickupAddress,
+  itemName,
   updateItem,
 }: interestPersonsProps) => {
   const { theme, userData, fetchData, setData, setLastDoc } = useStore();
-  const [closeConfirmation, setCloseConfirmation] = useState<boolean>(false);
-  const [confirmation, setConfirmation] = useState<string>("");
+  const [closeConfirmation, setCloseConfirmation] = useState<boolean>(
+    reciever !== "" ? true : false
+  );
+  const [confirmation, setConfirmation] = useState<string>(reciever);
+  const [clickedItem, setClickedItem] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleConfirmation = (item: string) => {
@@ -107,32 +108,43 @@ const InterestedPersonsList = ({
     setConfirmation("");
   };
 
-  const intiateChat = (recipientId: string) => {
+  const removeReciever = (recipientId: string) => {
+    setClickedItem(recipientId);
     if (recipientId === "") {
       Alert.alert("Sorry, you cannot initate this chat");
     } else {
-      const chatData = {
-        giverId: userData?.id,
+      setIsLoading(true);
+      const data = {
+        id: itemId,
         recipientId: recipientId,
       };
-      console.log(chatData, "chatData Donor");
-
-      router.replace({
-        pathname: "/chat",
-        params: {
-          giverId: userData?.id as string,
-          recipientId: recipientId,
-        },
+      handleRemoveReciever(data).then((res: any) => {
+        updateItem();
+        setData([]);
+        setLastDoc(null);
+        fetchData();
+        Alert.alert(res?.message);
+        setConfirmation(reciever);
+        setCloseConfirmation(false);
+        setIsLoading(false);
       });
     }
   };
+
   const handleSelection = async () => {
     setIsLoading(true);
-
+    setClickedItem(confirmation);
     const dat = {
       userId: confirmation,
       id: itemId,
+
+      giverId: userData?.id as string,
+      itemId: itemId,
+      itemName: itemName,
+      pickupAddress: pickupAddress,
+      recipientId: confirmation,
     };
+
     const res = await handleInterest(dat);
     if (res?.statusCode === 200) {
       updateItem();
@@ -167,111 +179,102 @@ const InterestedPersonsList = ({
               <Text style={styles.id}>{maskString(item)}</Text>
             </View>
 
-            <Pressable
-              onPress={() => handleConfirmation(item)}
-              style={styles.choose}
-            >
-              {confirmation === item && !closeConfirmation ? (
-                <>
-                  {isLoading ? (
-                    <View style={{ marginRight: 20 }}>
-                      <Loader />
-                    </View>
-                  ) : (
-                    <>
-                      <Pressable
-                        style={styles.confirmView}
-                        onPress={handleSelection}
+            {isLoading && clickedItem === item ? (
+              <View style={{ marginRight: 20 }}>
+                <IndicatorLoader />
+              </View>
+            ) : (
+              <Pressable
+                onPress={() => handleConfirmation(item)}
+                style={styles.choose}
+              >
+                {confirmation === item && !closeConfirmation ? (
+                  <>
+                    <Pressable
+                      style={styles.confirmView}
+                      onPress={handleSelection}
+                    >
+                      <Text
+                        style={[
+                          styles.pick,
+                          {
+                            color: theme === "dark" ? primaryYellow : "#7CDBB9",
+                            marginRight: 30,
+                          },
+                        ]}
                       >
+                        Yes
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      style={styles.confirmView}
+                      onPress={cancelSelection}
+                    >
+                      <Text
+                        style={[
+                          styles.pick,
+                          {
+                            color: theme === "dark" ? primaryRed : primaryRed,
+                          },
+                        ]}
+                      >
+                        No
+                      </Text>
+                    </Pressable>
+                  </>
+                ) : (
+                  <>
+                    {closeConfirmation ||
+                    (status !== "Available" && status !== "Rejected") ? (
+                      <>
+                        {confirmation === item || reciever === item ? (
+                          <View style={styles.confirmView}>
+                            <MaterialIcons
+                              name="beenhere"
+                              size={24}
+                              color="#7CDBB9"
+                              style={{ marginRight: 30 }}
+                            />
+                            <Pressable
+                              onPress={() =>
+                                removeReciever(
+                                  confirmation === item ? item : ""
+                                )
+                              }
+                            >
+                              <MaterialIcons
+                                name="cancel"
+                                size={24}
+                                color={theme === "dark" ? "#ccc" : primaryRed}
+                              />
+                            </Pressable>
+                          </View>
+                        ) : null}
+                      </>
+                    ) : (
+                      <>
                         <Text
                           style={[
                             styles.pick,
                             {
                               color:
-                                theme === "dark" ? primaryYellow : "#7CDBB9",
-                              marginRight: 30,
+                                theme === "dark" ? primaryYellow : primaryRed,
                             },
                           ]}
                         >
-                          Yes
+                          Pick
                         </Text>
-                      </Pressable>
-                      <Pressable
-                        style={styles.confirmView}
-                        onPress={cancelSelection}
-                      >
-                        <Text
-                          style={[
-                            styles.pick,
-                            {
-                              color: theme === "dark" ? primaryRed : primaryRed,
-                            },
-                          ]}
-                        >
-                          No
-                        </Text>
-                      </Pressable>
-                    </>
-                  )}
-                </>
-              ) : (
-                <>
-                  {closeConfirmation ||
-                  (status !== "Available" && status !== "Rejected") ? (
-                    <>
-                      {confirmation === item ? (
-                        <View style={styles.confirmView}>
-                          <MaterialIcons
-                            name="beenhere"
-                            size={24}
-                            color="#7CDBB9"
-                            style={{ marginRight: 30 }}
-                          />
-                          <Pressable
-                            onPress={() =>
-                              intiateChat(confirmation === item ? item : "")
-                            }
-                          >
-                            <Entypo
-                              name="chat"
-                              size={24}
-                              color={
-                                theme === "dark" ? primaryYellow : primaryRed
-                              }
-                            />
-                          </Pressable>
-                        </View>
-                      ) : (
-                        <MaterialIcons
-                          name="pending"
-                          size={24}
+                        <EvilIcons
+                          name="plus"
+                          size={20}
                           color={theme === "dark" ? primaryYellow : primaryRed}
                         />
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <Text
-                        style={[
-                          styles.pick,
-                          {
-                            color:
-                              theme === "dark" ? primaryYellow : primaryRed,
-                          },
-                        ]}
-                      >
-                        Pick
-                      </Text>
-                      <EvilIcons
-                        name="plus"
-                        size={20}
-                        color={theme === "dark" ? primaryYellow : primaryRed}
-                      />
-                    </>
-                  )}
-                </>
-              )}
-            </Pressable>
+                      </>
+                    )}
+                  </>
+                )}
+              </Pressable>
+            )}
           </View>
         );
       })}

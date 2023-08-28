@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Define a custom hook that takes a key and an initial value as arguments
 const useAsyncStorage = (key: string, initialValue: any) => {
@@ -29,7 +29,7 @@ const useAsyncStorage = (key: string, initialValue: any) => {
           setStoredValue(value);
         }
       } catch (e) {
-        console.log(e)
+        console.log(e);
         // Handle error
       }
     };

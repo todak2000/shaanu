@@ -19,9 +19,11 @@ import {
   orderBy,
   limit,
   startAfter,
+  onSnapshot,
   getDocs,
 } from "firebase/firestore";
 import { db } from "../db/firebase";
+import * as Location from "expo-location";
 
 export type StoreContextProps = {
   userData: userDataProps | null;
@@ -41,6 +43,14 @@ export type StoreContextProps = {
   fetchData: any;
   lastDoc: any;
   setLastDoc: React.Dispatch<React.SetStateAction<any>>;
+  allData: GridItem[];
+  setAllData: React.Dispatch<React.SetStateAction<GridItem[]>>;
+  getAllItemDataStore: any;
+  getLocation: any;
+  donorData: GridItem[];
+  setDonorData: React.Dispatch<React.SetStateAction<GridItem[]>>;
+  requestData: GridItem[];
+  setRequestData: React.Dispatch<React.SetStateAction<GridItem[]>>;
 };
 
 export const StoreContext = createContext<StoreContextProps>({
@@ -61,6 +71,14 @@ export const StoreContext = createContext<StoreContextProps>({
   fetchData: () => null,
   lastDoc: null,
   setLastDoc: () => null,
+  allData: [],
+  setAllData: () => null,
+  getAllItemDataStore: () => null,
+  donorData: [],
+  setDonorData: () => null,
+  requestData: [],
+  setRequestData: () => null,
+  getLocation: () => null,
 });
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
@@ -70,9 +88,28 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState<any>();
   const [data, setData] = useState<GridItem[]>([]);
+  const [allData, setAllData] = useState<GridItem[]>([]);
   const [lastDoc, setLastDoc] = useState<DocumentData | null>(null);
 
+  const [requestData, setRequestData] = useState<GridItem[]>([]);
+  const [donorData, setDonorData] = useState<GridItem[]>([]);
+
   const theme = useColorScheme();
+
+  const getAllItemDataStore = async () => {
+    const boardDB = collection(db, "Inventory");
+    onSnapshot(boardDB, (querySnapshot) => {
+      if (querySnapshot) {
+        setAllData(() => {
+          const newData = querySnapshot.docs.map(
+            (doc) => ({ id: doc.id, ...doc.data() } as GridItem)
+          );
+          return newData;
+        });
+      }
+    });
+  };
+
   useEffect(() => {
     const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
       auth,
@@ -88,6 +125,45 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     );
     return unsubscribeFromAuthStatuChanged;
   });
+
+  const getLocation = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      console.log("Permission to access location was denied");
+      return;
+    } else {
+      if (curentLoc === "Searching...") {
+        await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Highest,
+        }).then(async (location) => {
+          const { latitude, longitude } = location.coords;
+          let response = await Location.reverseGeocodeAsync({
+            latitude,
+            longitude,
+          });
+          let fullLoc = response[0].city + ", " + response[0].region;
+          setCurrentLoc(fullLoc);
+        });
+      }
+    }
+  };
+  useEffect(() => {
+    getLocation();
+    console.log(curentLoc, "current location");
+  }, [curentLoc]);
+
+  useEffect(() => {
+    getAllItemDataStore();
+  }, []);
+
+  useEffect(() => {
+    setRequestData(
+      allData?.filter((item) =>
+        item?.interestedParties?.includes(userData?.id as string)
+      )
+    );
+    setDonorData(allData?.filter((item) => item?.donor === userData?.id));
+  }, [allData]);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -155,6 +231,14 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       fetchData,
       lastDoc,
       setLastDoc,
+      allData,
+      setAllData,
+      getAllItemDataStore,
+      requestData,
+      setRequestData,
+      donorData,
+      setDonorData,
+      getLocation,
     }),
     [
       userData,
@@ -174,6 +258,14 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       fetchData,
       lastDoc,
       setLastDoc,
+      allData,
+      setAllData,
+      getAllItemDataStore,
+      requestData,
+      setRequestData,
+      donorData,
+      setDonorData,
+      getLocation,
     ]
   );
 

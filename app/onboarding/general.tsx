@@ -33,7 +33,6 @@ const GeneralScreen = ({
           {userData?.firstname}
         </Text>
       </Text>
-
       <Button
         onPress={handleRedirect}
         title="Continue"

@@ -3,6 +3,8 @@ export const dateFormaterString = (dateString: string) => {
     month: "short",
     day: "numeric",
     year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
   });
   return formattedDate;
 };

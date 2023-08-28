@@ -25,14 +25,17 @@ import {
   handlePotentialInterest,
   handleRemoveInterest,
   handleSingleItem,
+  handleConfirmDelivery,
 } from "./db/apis";
 import { GridItem } from "../components/Home/GridList";
-import Loader from "../components/Loader";
+import { maskString } from "./utils";
 
 const screenHeight = Dimensions.get("window").height;
 
 export default function DonationItemView() {
   const { id } = useLocalSearchParams();
+  const { allData, getAllItemDataStore } = useStore();
+
   const {
     theme,
     loading,
@@ -51,39 +54,93 @@ export default function DonationItemView() {
     if (recipientId === "") {
       Alert.alert("Sorry, you cannot initate this chat");
     } else {
-      const chatData = {
-        giverId: item?.donor,
-        recipientId: userData?.id,
-      };
-      console.log(chatData, "chatData Recipient");
-
       router.replace({
         pathname: "/chat",
         params: {
           giverId: item?.donor as string,
           recipientId: userData?.id as string,
+          chatId: item?.id as string,
         },
       });
     }
   };
 
-  const handleCancelInterest = async () => {
-    setLoading(true);
-    const data = { id: id as string, userId: userData?.id as string };
-    const res = await handleRemoveInterest(data);
+  const handleDelivery = async () => {
+    handleDeliveryLocal();
+    const data = {
+      itemId: id as string,
+      donorId: item?.donor as string,
+      recieverId: userData?.id as string,
+    };
+    const res = await handleConfirmDelivery(data);
     if (res?.statusCode === 200) {
-      handleGetItem().then(() => {
+      Alert.alert(res?.message as string);
+      setLoading(false);
+      setData([]);
+      setLastDoc(null);
+      fetchData();
+      getAllItemDataStore();
+    } else {
+      handleDeliveryLocalReverse();
+    }
+  };
+  const handleCancelInterest = async () => {
+    handleConfirmInterestLocalReverse();
+    const data = { id: id as string, userId: userData?.id as string };
+
+    if ((item?.interestedParties as string[]).length < 5) {
+      const res = await handleRemoveInterest(data);
+      if (res?.statusCode === 200) {
+        setLoading(false);
         setData([]);
         setLastDoc(null);
         fetchData();
-        Alert.alert(res?.message);
-        setIsInterested(false);
-      });
+        getAllItemDataStore();
+      }
     }
   };
 
+  const handleDeliveryLocal = () => {
+    setItem((prevItem: any) => ({
+      ...prevItem,
+      status: "Delivered",
+    }));
+    setIsInterested(false);
+  };
+  const handleDeliveryLocalReverse = () => {
+    setItem((prevItem: any) => ({
+      ...prevItem,
+      status: "Paired",
+    }));
+  };
+
+  const handleConfirmInterestLocalReverse = () => {
+    setItem((prevItem: any) => ({
+      ...prevItem,
+      interestedParties: !prevItem.interestedParties.includes(
+        userData?.id as string
+      )
+        ? prevItem.interestedParties
+        : prevItem.interestedParties.filter(
+            (party: string) => party !== (userData?.id as string)
+          ),
+    }));
+    setIsInterested(true);
+  };
+
+  const handleConfirmInterestLocal = () => {
+    setItem((prevItem: any) => ({
+      ...prevItem,
+      interestedParties: !prevItem.interestedParties.includes(
+        userData?.id as string
+      )
+        ? [...prevItem.interestedParties, userData?.id as string]
+        : [...prevItem.interestedParties],
+    }));
+    setIsInterested(false);
+  };
   const handleConfirmInterest = async () => {
-    setLoading(true);
+    handleConfirmInterestLocal();
 
     const data = { id: id as string, userId: userData?.id as string };
 
@@ -91,15 +148,14 @@ export default function DonationItemView() {
       const res = await handlePotentialInterest(data);
       if (res?.statusCode === 200) {
         setLoading(false);
-        handleGetItem().then(() => {
-          setData([]);
-          setLastDoc(null);
+        setData([]);
+        setLastDoc(null);
 
-          fetchData();
-          setIsInterested(true);
-        });
+        fetchData();
+        getAllItemDataStore();
+      } else {
+        handleConfirmInterestLocalReverse();
       }
-      Alert.alert(res?.message as string);
     } else {
       Alert.alert(
         "We regret to inform you that the interest quota has been exceeded. We apologize for any inconvenience this may have caused. Thank you for your understanding."
@@ -116,8 +172,10 @@ export default function DonationItemView() {
     });
   };
   useEffect(() => {
-    setLoading(true);
-    handleGetItem();
+    getAllItemDataStore();
+    const item: any = allData.filter((x) => x.id === id);
+    setItem(item[0]);
+    setLoading(false);
   }, []);
 
   return (
@@ -131,7 +189,7 @@ export default function DonationItemView() {
             >
               <Ionicons
                 name="ios-chevron-back-outline"
-                size={24}
+                size={40}
                 color={theme === "dark" ? "#fff" : "black"}
               />
             </TouchableOpacity>
@@ -148,146 +206,178 @@ export default function DonationItemView() {
               <Text style={styles.title}>{item?.name}</Text>
             )}
           </View>
-          {loading ? (
-            <Loader />
-          ) : (
-            <>
-              {item?.category === "Cash" ? (
-                <View style={styles.cash}>
-                  <MaterialCommunityIcons
-                    name="bank-outline"
-                    style={{ padding: 20 }}
-                    size={100}
-                    color={theme === "dark" ? "#f0f0f0" : "#ccc"}
-                  />
-                </View>
-              ) : (
-                <ImageGrid imageUrls={item?.imageUrl as string[]} />
-              )}
-              <View style={styles.lowerView}>
-                <View
-                  style={[
-                    styles.disabled,
-                    {
-                      backgroundColor: theme === "dark" ? "#232323" : "#F8F8FA",
-                    },
-                  ]}
-                >
-                  <MaterialIcons name="category" size={16} color="#08B72F" />
-                  <Text style={styles.disbaledText}>{item?.category}</Text>
-                </View>
-                <View
-                  style={[
-                    styles.disabled,
-                    {
-                      backgroundColor: theme === "dark" ? "#232323" : "#F8F8FA",
-                    },
-                  ]}
-                >
-                  <MaterialCommunityIcons
-                    name="progress-check"
-                    size={16}
-                    color="#08B72F"
-                  />
-                  <Text style={styles.disbaledText}>{item?.status}</Text>
-                </View>
-                <View
-                  style={[
-                    styles.disabled,
-                    {
-                      backgroundColor: theme === "dark" ? "#232323" : "#F8F8FA",
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="ios-location"
-                    size={16}
-                    color={theme === "dark" ? "#f0f0f0" : "#ccc"}
-                  />
-                  <Text style={styles.disbaledText}>{item?.location}</Text>
-                </View>
-                <View
-                  style={[
-                    styles.disabled,
-                    {
-                      backgroundColor: theme === "dark" ? "#232323" : "#F8F8FA",
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="ios-people-outline"
-                    size={16}
-                    color={theme === "dark" ? primaryYellow : primaryRed}
-                  />
-                  <Text style={styles.disbaledText}>
-                    {item?.interestedParties?.length}
-                  </Text>
-                </View>
-                {userData?.id === item?.donor ? (
-                  <>
-                    <Text style={styles.repHeader}>Potential Recipients</Text>
-                    {(item?.interestedParties as string[])?.length > 0 ? (
+          <>
+            {item?.category === "Cash" ? (
+              <View style={styles.cash}>
+                <MaterialCommunityIcons
+                  name="bank-outline"
+                  style={{ padding: 20 }}
+                  size={100}
+                  color={theme === "dark" ? "#f0f0f0" : "#ccc"}
+                />
+              </View>
+            ) : (
+              <ImageGrid imageUrls={item?.imageUrl as string[]} />
+            )}
+            <View style={styles.lowerView}>
+              <View
+                style={[
+                  styles.disabled,
+                  {
+                    backgroundColor: theme === "dark" ? "#232323" : "#F8F8FA",
+                  },
+                ]}
+              >
+                <MaterialIcons name="category" size={16} color="#08B72F" />
+                <Text style={styles.disbaledText}>{item?.category}</Text>
+              </View>
+              <View
+                style={[
+                  styles.disabled,
+                  {
+                    backgroundColor: theme === "dark" ? "#232323" : "#F8F8FA",
+                  },
+                ]}
+              >
+                <MaterialCommunityIcons
+                  name="progress-check"
+                  size={16}
+                  color="#08B72F"
+                />
+                <Text style={styles.disbaledText}>{item?.status}</Text>
+              </View>
+              <View
+                style={[
+                  styles.disabled,
+                  {
+                    backgroundColor: theme === "dark" ? "#232323" : "#F8F8FA",
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="ios-location"
+                  size={16}
+                  color={theme === "dark" ? "#f0f0f0" : "#ccc"}
+                />
+                <Text style={styles.disbaledText}>{item?.location}</Text>
+              </View>
+              <View
+                style={[
+                  styles.disabled,
+                  {
+                    backgroundColor: theme === "dark" ? "#232323" : "#F8F8FA",
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="ios-location"
+                  size={16}
+                  color={theme === "dark" ? primaryRed : primaryYellow}
+                />
+                <Text style={styles.disbaledText}>{item?.pickupAddress}</Text>
+              </View>
+              <View
+                style={[
+                  styles.disabled,
+                  {
+                    backgroundColor: theme === "dark" ? "#232323" : "#F8F8FA",
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="ios-people-outline"
+                  size={16}
+                  color={theme === "dark" ? primaryYellow : primaryRed}
+                />
+                <Text style={styles.disbaledText}>
+                  {item?.interestedParties?.length}
+                </Text>
+              </View>
+
+              {userData?.id === item?.donor ? (
+                <>
+                  <Text style={styles.repHeader}>Potential Recipients</Text>
+                  {(item?.interestedParties as string[])?.length > 0 ? (
+                    <>
                       <InterestedPersonsList
                         dataa={item?.interestedParties as string[]}
                         status={item?.status as string}
                         reciever={item?.reciever as string}
                         itemId={item?.id as string}
+                        itemName={item?.name as string}
+                        pickupAddress={item?.pickupAddress as string}
                         updateItem={handleGetItem}
                       />
-                    ) : (
-                      <View style={styles.noPerson}>
-                        <MaterialCommunityIcons
-                          name="account-cancel-outline"
-                          size={100}
-                          color={theme === "dark" ? "#232323" : "#ccc"}
-                        />
-                        <Text
-                          style={[
-                            styles.warning,
-                            {
-                              color:
-                                theme === "dark" ? primaryYellow : primaryRed,
-                            },
-                          ]}
-                        >
-                          There are no interest in this item yet!
-                        </Text>
-                      </View>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {isInterested ||
-                    item?.interestedParties.includes(userData?.id as string) ? (
-                      <>
-                        <Text
-                          style={[
-                            styles.warning,
-                            {
-                              color:
-                                theme === "dark" ? primaryYellow : primaryRed,
-                            },
-                          ]}
-                        >
-                          Please be advised that the next step in the process is
-                          for the donor to accept your request. We kindly ask
-                          for your patience while this takes place. Thank you
-                          for your understanding. 😊
-                        </Text>
-                        <Button
-                          onPress={
-                            userData?.id !== item?.donor
-                              ? handleCancelInterest
-                              : () => null
-                          }
-                          title="Withdraw Interest"
-                          icon={false}
-                          color={theme === "dark" ? primaryRed : "gray"}
-                          isLoading={loading}
-                          theme={theme}
-                        />
+                      {item?.reciever !== "" && (
+                        <>
+                          <Button
+                            onPress={intiateChat}
+                            title={`Continue Chat with ${maskString(
+                              item?.reciever
+                            )}`}
+                            icon={false}
+                            color={theme === "dark" ? primaryYellow : "#000"}
+                            isLoading={loading}
+                            theme={theme}
+                          />
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <View style={styles.noPerson}>
+                      <MaterialCommunityIcons
+                        name="account-cancel-outline"
+                        size={100}
+                        color={theme === "dark" ? "#232323" : "#ccc"}
+                      />
+                      <Text
+                        style={[
+                          styles.warning,
+                          {
+                            color:
+                              theme === "dark" ? primaryYellow : primaryRed,
+                          },
+                        ]}
+                      >
+                        There are no interest in this item yet!
+                      </Text>
+                    </View>
+                  )}
+                </>
+              ) : (
+                <>
+                  {item?.interestedParties?.includes(userData?.id as string) &&
+                  item.status !== "Delivered" ? (
+                    <>
+                      <Text
+                        style={[
+                          styles.warning,
+                          {
+                            color:
+                              theme === "dark" ? primaryYellow : primaryRed,
+                          },
+                        ]}
+                      >
+                        Please be advised that the next step in the process is
+                        for the donor to accept your request. We kindly ask for
+                        your patience while this takes place. Thank you for your
+                        understanding. 😊
+                      </Text>
+                      <Button
+                        onPress={
+                          userData?.id !== item?.donor
+                            ? handleCancelInterest
+                            : () => null
+                        }
+                        title="Withdraw Interest"
+                        icon={false}
+                        color={theme === "dark" ? primaryRed : "gray"}
+                        isLoading={loading}
+                        theme={theme}
+                      />
 
-                        {item?.reciever === userData?.id && (
+                      {item?.reciever === userData?.id &&
+                        item.status === "Paired" && (
                           <View style={{ marginTop: 20 }}>
                             <Button
                               onPress={
@@ -303,10 +393,21 @@ export default function DonationItemView() {
                               isLoading={loading}
                               theme={theme}
                             />
+                            <View style={{ margin: 10 }}></View>
+                            <Button
+                              onPress={handleDelivery}
+                              title={`Confirm Item is Recieved`}
+                              icon={false}
+                              color="#08B72F"
+                              isLoading={loading}
+                              theme={theme}
+                            />
                           </View>
                         )}
-                      </>
-                    ) : (
+                    </>
+                  ) : (
+                    !loading &&
+                    item?.status !== "Delivered" && (
                       <>
                         <Text
                           style={[
@@ -338,12 +439,12 @@ export default function DonationItemView() {
                           theme={theme}
                         />
                       </>
-                    )}
-                  </>
-                )}
-              </View>
-            </>
-          )}
+                    )
+                  )}
+                </>
+              )}
+            </View>
+          </>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -375,7 +476,7 @@ const styles = StyleSheet.create({
   header: {
     justifyContent: "space-between",
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: 15,
     marginTop: 10,
   },
   lowerView: {
