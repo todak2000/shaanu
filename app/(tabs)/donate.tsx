@@ -89,7 +89,9 @@ const DonateScreen = () => {
   ) => {
     if (images.length <= 0 && values.category !== "Cash") {
       setIsImageError(imageError);
-    } else {
+    }
+    
+    else {
       setLocalLoading(true);
       setLoading(true);
 

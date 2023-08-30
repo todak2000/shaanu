@@ -5,8 +5,13 @@ import { EvilIcons, MaterialIcons } from "@expo/vector-icons";
 import { useStore } from "../../app/store";
 import { maskString } from "../../app/utils";
 import { primaryRed, primaryYellow } from "../../constants/Colors";
-import { handleInterest, handleRemoveReciever } from "../../app/db/apis";
+import {
+  handleInterest,
+  handleRemoveReciever,
+  getExpoToken,
+} from "../../app/db/apis";
 import IndicatorLoader from "../IndicatorLoader";
+import { sendExpoNotification } from "../../app/utils";
 interface interestPersonsProps {
   dataa: string[];
   status: string;
@@ -127,6 +132,18 @@ const InterestedPersonsList = ({
         setConfirmation(reciever);
         setCloseConfirmation(false);
         setIsLoading(false);
+
+        getExpoToken(recipientId).then((result) => {
+          console.log(result);
+          const title = `Update on Your Selection!`;
+          const message = `We regret to inform you that you have been deselected as a recipient for the donated item. Thank you for your interest and participation.`;
+          if (result.statusCode === 200) {
+            const recToken = result?.token;
+            sendExpoNotification(recToken as string, title, message)
+              .then((result) => console.log(result, "successful"))
+              .catch((error) => console.error(error, "error"));
+          }
+        });
       });
     }
   };
@@ -154,6 +171,17 @@ const InterestedPersonsList = ({
       Alert.alert(res?.message);
       setCloseConfirmation(true);
       setIsLoading(false);
+      getExpoToken(confirmation).then((result) => {
+        console.log(result);
+        const title = `You’ve Been Selected!`;
+        const message = `Congratulations! You have been selected to receive the donated item. Thank you for your interest and participation.`;
+        if (result.statusCode === 200) {
+          const recToken = result?.token;
+          sendExpoNotification(recToken as string, title, message)
+            .then((result) => console.log(result, "successful"))
+            .catch((error) => console.error(error, "error"));
+        }
+      });
     }
   };
 

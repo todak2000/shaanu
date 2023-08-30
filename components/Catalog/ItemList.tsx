@@ -13,6 +13,7 @@ import { router } from "expo-router";
 import { maskString } from "../../app/utils";
 import { primaryRed, primaryYellow } from "../../constants/Colors";
 import { GridItem } from "../Home/GridList";
+import { Naira } from "../Naira";
 
 interface interestPersonsProps {
   dataa: GridItem[];
@@ -83,6 +84,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 5,
   },
+  date: {
+    fontFamily: "MuseoRegular",
+    fontSize: 8,
+    marginLeft: 5,
+  },
   textNormal: {
     fontFamily: "MuseoRegular",
     fontSize: 12,
@@ -147,7 +153,18 @@ const ItemList = ({ dataa }: interestPersonsProps) => {
                     size={15}
                     color={theme === "dark" ? "#7CDBB9" : primaryRed}
                   />
-                  <Text style={styles.id}>{item.name} </Text>
+
+                  {item.category === "Cash" ? (
+                    <Text style={styles.id}>
+                      <Naira
+                        style={{ fontSize: 10 }}
+                        color={theme === "dark" ? primaryYellow : primaryRed}
+                      />{" "}
+                      {item.name}
+                    </Text>
+                  ) : (
+                    <Text style={styles.id}> {item.name} </Text>
+                  )}
                 </View>
 
                 {item?.reciever === "" && item?.status === "Delivered" && (
@@ -190,6 +207,14 @@ const ItemList = ({ dataa }: interestPersonsProps) => {
                     </Text>
                   </View>
                 )}
+                <Text
+                  style={[
+                    styles.date,
+                    { color: theme === "dark" ? primaryYellow : primaryRed },
+                  ]}
+                >
+                  {item?.deliveryDate}
+                </Text>
               </View>
               <TouchableOpacity
                 style={styles.choose}

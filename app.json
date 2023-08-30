@@ -1,6 +1,15 @@
 {
   "expo": {
     "name": "Shaanu",
+    "notification": {
+      "icon": "./assets/images/icon.png",
+      "color": "#ffffff",
+      "iosDisplayInForeground": true,
+      "sounds": [
+        "./assets/sound/correct.mp3",
+        "./assets/sound/correct.mp3"
+      ]
+    },
     "slug": "shaanu_app",
     "version": "1.0.1",
     "orientation": "portrait",
@@ -49,10 +58,26 @@
     },
     "plugins": [
       "expo-router",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#ffffff",
+          "sounds": [
+            "./assets/sound/correct.mp3",
+            "./assets/sound/correct.mp3"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "********************"
+      }
     }
   }
 }

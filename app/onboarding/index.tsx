@@ -22,12 +22,12 @@ export default function OnboardingScreen() {
     if (isRegistered) {
       setScreen(0);
     } else if (!isRegistered && screen === 6) {
-      wait(2000).then(() => {
+      wait(100).then(() => {
         setScreen(1);
         setIsLoading(false);
       });
     } else {
-      wait(2000).then(() => {
+      wait(100).then(() => {
         setScreen(screen | 1);
         setIsLoading(false);
       });

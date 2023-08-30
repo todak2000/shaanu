@@ -17,6 +17,7 @@ import {
   Ionicons,
   MaterialIcons,
 } from "@expo/vector-icons";
+import { sendExpoNotification } from "./utils";
 import { useRouter, router } from "expo-router";
 import Button from "../components/Button";
 import InterestedPersonsList from "../components/Item/InterestedPersonsList";
@@ -26,6 +27,7 @@ import {
   handleRemoveInterest,
   handleSingleItem,
   handleConfirmDelivery,
+  getExpoToken,
 } from "./db/apis";
 import { GridItem } from "../components/Home/GridList";
 import { maskString } from "./utils";
@@ -80,10 +82,23 @@ export default function DonationItemView() {
       setLastDoc(null);
       fetchData();
       getAllItemDataStore();
+
+      getExpoToken(item?.donor as string).then((result) => {
+        console.log(result);
+        const title = `Donation Confirmed! 📫`;
+        const message = `Thank you for your generous donation. The recipient has confirmed the collection of the item. Your kindness has made a difference.`;
+        if (result.statusCode === 200) {
+          const donorToken = result?.token;
+          sendExpoNotification(donorToken as string, title, message)
+            .then((result) => console.log(result, "successful"))
+            .catch((error) => console.error(error, "error"));
+        }
+      });
     } else {
       handleDeliveryLocalReverse();
     }
   };
+
   const handleCancelInterest = async () => {
     handleConfirmInterestLocalReverse();
     const data = { id: id as string, userId: userData?.id as string };
@@ -96,6 +111,25 @@ export default function DonationItemView() {
         setLastDoc(null);
         fetchData();
         getAllItemDataStore();
+        getExpoToken(item?.donor as string).then((result) => {
+          console.log(result);
+          const title = `${
+            (item?.interestedParties as string[]).length > 1
+              ? item?.interestedParties?.length + " Withdrawals"
+              : 1 + " Withdrawal"
+          } of Interest! 📫`;
+          const message = `We regret to inform you that ${
+            (item?.interestedParties as string[]).length > 1
+              ? item?.interestedParties?.length + " Persons"
+              : 1 + " Person"
+          } has withdrawn their interest in the item you donated. Thank you for your generosity and understanding.`;
+          if (result.statusCode === 200) {
+            const donorToken = result?.token;
+            sendExpoNotification(donorToken as string, title, message)
+              .then((result) => console.log(result, "successful"))
+              .catch((error) => console.error(error, "error"));
+          }
+        });
       }
     }
   };
@@ -153,6 +187,25 @@ export default function DonationItemView() {
 
         fetchData();
         getAllItemDataStore();
+        getExpoToken(item?.donor as string).then((result) => {
+          console.log(result);
+          const title = `${
+            (item?.interestedParties as string[]).length > 1
+              ? item?.interestedParties?.length + " Interests"
+              : 1 + " Interest"
+          } in Your Donation! 📫`;
+          const message = `Hurray! ${
+            (item?.interestedParties as string[]).length > 1
+              ? item?.interestedParties?.length + " Persons"
+              : 1 + " Person"
+          } has just declared interest in the item you donated. Thank you for your generosity.`;
+          if (result.statusCode === 200) {
+            const donorToken = result?.token;
+            sendExpoNotification(donorToken as string, title, message)
+              .then((result) => console.log(result, "successful"))
+              .catch((error) => console.error(error, "error"));
+          }
+        });
       } else {
         handleConfirmInterestLocalReverse();
       }
@@ -294,7 +347,7 @@ export default function DonationItemView() {
                 </Text>
               </View>
 
-              {userData?.id === item?.donor ? (
+              {userData?.id === item?.donor && item?.status !== "Delivered" ? (
                 <>
                   <Text style={styles.repHeader}>Potential Recipients</Text>
                   {(item?.interestedParties as string[])?.length > 0 ? (

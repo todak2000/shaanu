@@ -40,6 +40,7 @@ export type userDataProps = {
   donated: number;
   isActive: boolean;
   recieved: number;
+  expoPushToken: string;
 } | null;
 
 export type imageProps = {
@@ -141,6 +142,7 @@ export const handleSignUpAuth = async (
 ): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
   let statusCode: number;
   let userData: userDataProps;
+
   try {
     const userCredentials = await createUserWithEmailAndPassword(
       auth,
@@ -161,6 +163,7 @@ export const handleSignUpAuth = async (
         isActive: true,
         donated: 0,
         recieved: 0,
+        expoPushToken: data.expoPushToken,
       };
       await setDoc(
         newUser,
@@ -173,6 +176,7 @@ export const handleSignUpAuth = async (
           isActive: true,
           donated: increment(0),
           recieved: increment(0),
+          expoPushToken: data.expoPushToken,
         },
         { merge: true }
       ).then(() => {
@@ -227,6 +231,7 @@ export const handleSignInAuth = async (
         isActive: querySnapshot.docs[0].data().isActive,
         donated: querySnapshot.docs[0].data().donated,
         recieved: querySnapshot.docs[0].data().recieved,
+        expoPushToken: querySnapshot?.docs[0]?.data()?.expoPushToken || "",
       };
 
       return { statusCode, userData };
@@ -754,6 +759,7 @@ export const handleConfirmDelivery = async (data: {
       boardRef,
       {
         status: "Delivered",
+        deliveryDate: dateFormaterString(new Date().toString()),
       },
       { merge: true }
     );
@@ -779,5 +785,30 @@ export const handleConfirmDelivery = async (data: {
     };
   } catch (error: any) {
     return { statusCode: 501, message: "Oops! an error occurred" };
+  }
+};
+
+// Get user Expo Token (Protected route)
+export const getExpoToken = async (
+  userId: string
+): Promise<{ statusCode: number; token: string } | any> => {
+  let token: string = "";
+  try {
+    const singleItemRef = doc(db, "Users", userId);
+
+    const querySnapshot = await getDoc(singleItemRef);
+
+    if (querySnapshot.exists()) {
+      token = querySnapshot.data().expoPushToken;
+      return { statusCode: 200, token: token };
+    } else {
+      console.log("No such document!");
+      return { statusCode: 300, token: token };
+    }
+  } catch (error: any) {
+    return {
+      statusCode: 501,
+      token: token,
+    };
   }
 };

@@ -57,6 +57,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme === "light" ? "#232323" : primaryYellow,
+        tabBarLabelStyle:{ fontFamily:"MuseoRegular", marginBottom: 5, fontSize: 8}
       }}
     >
       <Tabs.Screen

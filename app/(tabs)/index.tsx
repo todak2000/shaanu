@@ -4,13 +4,18 @@ import { Text, View } from "../../components/Themed";
 import { useStore } from "../store";
 import Header from "../../components/Home/Header";
 import SearchBar from "../../components/Home/Search";
-import { ItemPropsWithID, Item2Props, handleDonationList } from "../db/apis";
+import {
+  ItemPropsWithID,
+  Item2Props,
+  handleDonationList,
+  getExpoToken,
+} from "../db/apis";
 import Loader from "../../components/Loader";
 import Categories from "../../components/Home/Category";
 import GridList from "../../components/Home/GridList";
 import { categoryProps } from "../../components/Home/Category";
 import { GridItem } from "../../components/Home/GridList";
-
+import { sendExpoNotification } from "../utils";
 import * as Crypto from "expo-crypto";
 import {
   MaterialCommunityIcons,
@@ -31,6 +36,8 @@ function HomeScreen() {
     fetchData,
     lastDoc,
     setLastDoc,
+    userData,
+    expoPushToken,
   } = useStore();
   const [searchArr, setSearchArr] = useState<
     ItemPropsWithID[] | Item2Props[] | null
@@ -54,6 +61,18 @@ function HomeScreen() {
     handleDonationList().then((result: any) => {
       setBackUpArr(result?.resultArray);
     });
+
+    // getExpoToken(userData?.id as string).then(result => {
+    //   console.log(result)
+    //   const title = `Test Header! 📫`;
+    //   const message = `Test Body. Thank you for your generosity.`
+    //   if (result.statusCode === 200) {
+    //     const token = result?.token
+    //     sendExpoNotification(token as string, title, message)
+    //     .then(result => console.log(result, "successful"))
+    //     .catch(error => console.error(error, "error"));
+    //   }
+    // });
   }, []);
 
   useEffect(() => {
@@ -93,6 +112,13 @@ function HomeScreen() {
           color={theme === "dark" ? primaryYellow : "#232323"}
         />
       ),
+      iconActive: (
+        <AntDesign
+          name="CodeSandbox"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
     },
     {
       id: Crypto.randomUUID(),
@@ -102,6 +128,13 @@ function HomeScreen() {
           name="food-turkey"
           size={24}
           color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <MaterialCommunityIcons
+          name="food-turkey"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
         />
       ),
     },
@@ -115,6 +148,13 @@ function HomeScreen() {
           color={theme === "dark" ? primaryYellow : "#232323"}
         />
       ),
+      iconActive: (
+        <FontAwesome5
+          name="utensils"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
     },
     {
       id: Crypto.randomUUID(),
@@ -124,6 +164,13 @@ function HomeScreen() {
           name="ios-watch"
           size={24}
           color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <Ionicons
+          name="ios-watch"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
         />
       ),
     },
@@ -137,6 +184,13 @@ function HomeScreen() {
           color={theme === "dark" ? primaryYellow : "#232323"}
         />
       ),
+      iconActive: (
+        <MaterialCommunityIcons
+          name="piggy-bank-outline"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
     },
     {
       id: Crypto.randomUUID(),
@@ -146,6 +200,13 @@ function HomeScreen() {
           name="monitor-cellphone"
           size={24}
           color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <MaterialCommunityIcons
+          name="monitor-cellphone"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
         />
       ),
     },
@@ -159,11 +220,31 @@ function HomeScreen() {
           color={theme === "dark" ? primaryYellow : "#232323"}
         />
       ),
+      iconActive: (
+        <MaterialCommunityIcons
+          name="table-furniture"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
     },
     {
       id: Crypto.randomUUID(),
       category: "Others",
-      icon: <AntDesign name="questioncircle" size={24} color={primaryYellow} />,
+      icon: (
+        <AntDesign
+          name="questioncircle"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <AntDesign
+          name="questioncircle"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
     },
   ];
 
@@ -189,13 +270,15 @@ function HomeScreen() {
             {" "}
             {type === 0
               ? `${
-                  selectedCategory === null ? "All" : selectedCategory?.category
+                  typeof selectedCategory?.category === "string"
+                    ? selectedCategory?.category
+                    : ""
                 } Donations close to you `
               : searchText !== ""
               ? "Search result"
               : "All Donations close to you "}
           </Text>
-
+          {/* <Text>{selectedCategory?.category} - cate</Text> */}
           {data?.length > 0 ? (
             <GridList
               data={data}
@@ -215,7 +298,7 @@ function HomeScreen() {
                   ]}
                 >
                   Oops! there are no{" "}
-                  {selectedCategory !== null
+                  {typeof selectedCategory?.category === "string"
                     ? `${selectedCategory?.category} Donations close to you currently`
                     : "Donations close to you currently"}
                 </Text>
