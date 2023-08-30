@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
 export type categoryProps = {
   id: string;
   icon: any;
+  iconActive: any;
   category: string | null;
 };
 
@@ -90,12 +91,23 @@ const Categories = ({
               onPress={() => handleSelect(item)}
               key={item.id}
             >
-              <>{item.icon}</>
+              <>
+                {selectedCategory?.category === item.category
+                  ? item?.iconActive
+                  : item.icon}
+              </>
               <Text
-                style={[
-                  styles.text,
-                  { color: theme === "dark" ? primaryYellow : "#232323" },
-                ]}
+                style={
+                  selectedCategory?.category === item.category
+                    ? [
+                        styles.text,
+                        { color: theme === "dark" ? "#000" : "#232323" },
+                      ]
+                    : [
+                        styles.text,
+                        { color: theme === "dark" ? primaryYellow : "#232323" },
+                      ]
+                }
               >
                 {item.category === null ? "All" : item.category}
               </Text>

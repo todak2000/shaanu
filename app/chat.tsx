@@ -10,8 +10,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState, useRef } from "react";
 import { useStore } from "./store";
 import { Ionicons } from "@expo/vector-icons";
-import { dateFormaterString, maskString } from "./utils";
-import { handleUpdateChat } from "./db/apis";
+import { dateFormaterString, maskString, sendExpoNotification } from "./utils";
+import { handleUpdateChat, getExpoToken } from "./db/apis";
 import { chatProps } from "./db/apis";
 import { ChatText } from "../components/ChatText";
 import ChatEdit from "../components/ChatEdit";
@@ -80,6 +80,21 @@ export default function ChatView() {
             )
             .reverse(),
         }));
+      } else {
+        const id =
+          userData?.id === chatData?.donorId
+            ? chatData?.recipientId
+            : chatData?.donorId;
+        getExpoToken(id as string).then((result) => {
+          const title = `New Message Alert! 📫`;
+          const message = `You have a new message waiting for you. Check it out now!`;
+          if (result.statusCode === 200) {
+            const token = result?.token;
+            sendExpoNotification(token as string, title, message)
+              .then((result) => console.log(result, "successful"))
+              .catch((error) => console.error(error, "error"));
+          }
+        });
       }
       handleChatData();
     });

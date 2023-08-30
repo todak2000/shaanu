@@ -7,7 +7,6 @@ import Wrapper from "../../components/Wrapper";
 import { primaryRed, primaryYellow } from "../../constants/Colors";
 import {
   Ionicons,
-  MaterialCommunityIcons,
   FontAwesome5,
 } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
@@ -96,7 +95,7 @@ function SettingsScreenView() {
               { color: theme === "dark" ? "#ccc" : "#ababab" },
             ]}
           >
-            {userData?.email} | {curentLoc}
+            {curentLoc}
           </Text>
         </View>
         <View style={styles.rowFlex}>
@@ -120,9 +119,9 @@ function SettingsScreenView() {
                 size={24}
                 color={theme === "dark" ? "#ccc" : primaryYellow}
               />
-              <Text style={styles.text}>Dark Mode</Text>
+              <Text style={styles.text}>{theme === "dark" ? "Dark Mode" : "Light Mode"}</Text>
             </View>
-            {theme === "dark" ? (
+            {/* {theme === "dark" ? (
               <MaterialCommunityIcons
                 name="toggle-switch"
                 size={70}
@@ -134,7 +133,7 @@ function SettingsScreenView() {
                 size={70}
                 color={theme !== "dark" ? "#ccc" : "#ccc"}
               />
-            )}
+            )} */}
           </View>
         </View>
         <Button
@@ -220,6 +219,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 8,
     paddingBottom: 8,
+    marginBottom:10,
+    marginTop: 10,
   },
   rowInner: {
     flexDirection: "row",

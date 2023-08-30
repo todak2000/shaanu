@@ -8,6 +8,7 @@ import {
   Image,
   StyleSheet,
 } from "react-native";
+
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { useStore } from "../../app/store";
 import { DocumentData } from "firebase/firestore";
@@ -25,6 +26,7 @@ export interface GridItem {
   interestedParties: string[];
   pickupAddress?: string | any;
   reciever?: string | any;
+  deliveryDate?: string;
 }
 
 interface GridListProps {
@@ -108,7 +110,7 @@ const GridList = ({
   setLastDoc,
   fetchData,
 }: GridListProps) => {
-  const { theme, userData, setLoading } = useStore();
+  const { theme, userData, setLoading, curentLoc } = useStore();
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -225,7 +227,7 @@ const GridList = ({
                     { color: theme === "dark" ? "#f0f0f0" : "#000" },
                   ]}
                 >
-                  {item.location}
+                  {item.location !== 'Searching...' ? item.location : item.pickupAddress}
                 </Text>
               </View>
             </View>

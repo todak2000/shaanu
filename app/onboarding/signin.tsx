@@ -25,7 +25,7 @@ const SigninForm = ({
       setScreen(0);
     }
   });
-
+  
   const handleSubmit = (
     values: FormValues,
     actions: FormikHelpers<FormValues>
@@ -34,9 +34,13 @@ const SigninForm = ({
 
     actions.setSubmitting(false);
     handleSignInAuth(values).then((res) => {
-      if (res?.statusCode === 200) {
+      if (res?.statusCode === 200 && res?.userData?.isVerified) {
         setUserData(res?.userData);
-      } else if (res?.statusCode === 404) {
+      } else if (res?.statusCode === 200 && !res?.userData?.isVerified) {
+        Alert.alert(
+          "Oops! Kindly visit your email to verify your account"
+        );
+      }else if (res?.statusCode === 404) {
         Alert.alert(
           "Oops! The email does not exist in our databse. Please Signup"
         );

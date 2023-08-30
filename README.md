@@ -2,6 +2,8 @@
 
 Shaanu is a mobile app that empowers neighbors to share unused food, household items with each other or even money, helping to alleviate the financial burden of everyday life. By connecting those with resources (who have enough to spare) to those in need, Shaanu aims to reduce household and food waste, while also fostering a spirit of community and cooperation. Whether it's a bag of rice, a jar of peanut butter, or a set of kitchen utensils, Shaanu provides a platform for neighbors to come together and support one another during these challenging times.
 
+Google playstore link (Currently on beta test): [HERE](https://play.google.com/store/apps/details?id=com.todak2000.shaanu_app)
+
 ## Features
 - 💎 User profiles: Users can create profiles showcasing their available items, including photos and descriptions.
 - 💎 Search function: Users can search for specific items by category, location, or keyword.
@@ -9,7 +11,7 @@ Shaanu is a mobile app that empowers neighbors to share unused food, household i
 - 💎 Donation feature: Users can choose to donate items they no longer need to charity or goodwill organizations.
 - 💎 Virtual inventory management: Users can keep track of their available items and request notifications when someone expresses interest in an item they have listed.
 - 💎 Social media integration: Users can share their experiences and discoveries on social media platforms like Facebook, Twitter, and Instagram.
-- 💎 Push notifications (Todo): Users receive timely updates on new listings, expiring items, and successful transactions.
+- 💎 Push notifications: Users receive timely updates on donated items.
 - 💎 Gamification elements (Todo): To encourage engagement and participation, the app could incorporate gamified features such as point systems, badges, or leaderboards.
 - 💎 Item tracking: Users can mark items as "gone" or "available again" to help maintain accurate inventories and avoid double booking.
 
@@ -20,7 +22,7 @@ Shaanu is a mobile app that empowers neighbors to share unused food, household i
 - ⚡️ Expo
 - ⚛️ React Native
 - ✨ TypeScript
-
+- ✨ Firebase
 - 🃏 Jest — Configured for unit testing
 - 🤖 Conventional Commit Lint — Make sure you & your teammates follow conventional commit
 

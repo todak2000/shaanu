@@ -26,3 +26,18 @@ export const maskString = (input: string): string => {
 export const wait = (timeout: number) => {
   return new Promise((resolve) => setTimeout(resolve, timeout));
 };
+
+export const sendExpoNotification = async(to: string, title: string, body: string): Promise<any> =>{
+  const response = await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      to,
+      title,
+      body
+    })
+  });
+  return response.json();
+}

@@ -14,6 +14,7 @@ interface FormValues {
   email: string;
   phoneNumber: string;
   password: string;
+  expoPushToken: string;
   [key: string]: string;
 }
 
@@ -22,7 +23,15 @@ const SignupForm = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { loading, setLoading, theme, setUserData, userData } = useStore();
+  const {
+    loading,
+    setLoading,
+    theme,
+    setUserData,
+    userData,
+    registerForPushNotificationsAsync,
+    setExpoPushToken,
+  } = useStore();
 
   useEffect(() => {
     if (userData?.id) {
@@ -31,25 +40,30 @@ const SignupForm = ({
       setScreen(2);
     }
   });
-  const handleSubmit = (
+  const handleSubmit = async (
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
     setLoading(true);
     actions.setSubmitting(false);
-    handleSignUpAuth(values).then((res) => {
-      Alert.alert("Welcome! kindly check your email to verify your account");
-      if (res?.statusCode === 200) {
-        setUserData(res?.userData);
-      } else if (res?.statusCode === 409) {
-        Alert.alert(
-          "Oops! The email already exist in our databse. Please Signin"
-        );
-      } else {
-        Alert.alert("Oops! an error occurred");
-      }
-      setLoading(false);
-    });
+    const token = await registerForPushNotificationsAsync();
+    if (token) {
+      setExpoPushToken(token as string);
+      values.expoPushToken = token;
+      handleSignUpAuth(values).then((res) => {
+        Alert.alert("Welcome! kindly check your email to verify your account");
+        if (res?.statusCode === 200) {
+          setUserData(res?.userData);
+        } else if (res?.statusCode === 409) {
+          Alert.alert(
+            "Oops! The email already exist in our databse. Please Signin"
+          );
+        } else {
+          Alert.alert("Oops! an error occurred");
+        }
+        setLoading(false);
+      });
+    }
   };
 
   return (
@@ -61,6 +75,7 @@ const SignupForm = ({
           phoneNumber: "",
           password: "",
           email: "",
+          expoPushToken: "",
         }}
         validationSchema={SignupSchema}
         onSubmit={handleSubmit}

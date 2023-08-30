@@ -4,13 +4,16 @@ import React, {
   useState,
   useEffect,
   useMemo,
+  useRef,
 } from "react";
 import { auth } from "../db/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { userDataProps } from "../db/apis";
 import useAsyncStorage from "../utils/hooks";
-import { useColorScheme } from "react-native";
+import { useColorScheme, Platform } from "react-native";
 import { GridItem } from "../../components/Home/GridList";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
 import {
   collection,
   DocumentData,
@@ -24,6 +27,8 @@ import {
 } from "firebase/firestore";
 import { db } from "../db/firebase";
 import * as Location from "expo-location";
+
+const projectId = process.env.EXPO_PUBLIC_projectId;
 
 export type StoreContextProps = {
   userData: userDataProps | null;
@@ -51,6 +56,9 @@ export type StoreContextProps = {
   setDonorData: React.Dispatch<React.SetStateAction<GridItem[]>>;
   requestData: GridItem[];
   setRequestData: React.Dispatch<React.SetStateAction<GridItem[]>>;
+  registerForPushNotificationsAsync: any;
+  expoPushToken: string;
+  setExpoPushToken: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export const StoreContext = createContext<StoreContextProps>({
@@ -79,6 +87,17 @@ export const StoreContext = createContext<StoreContextProps>({
   requestData: [],
   setRequestData: () => null,
   getLocation: () => null,
+  registerForPushNotificationsAsync: () => null,
+  expoPushToken: "",
+  setExpoPushToken: () => null,
+});
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
 });
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
@@ -93,6 +112,11 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [requestData, setRequestData] = useState<GridItem[]>([]);
   const [donorData, setDonorData] = useState<GridItem[]>([]);
+
+  const [expoPushToken, setExpoPushToken] = useState<string>("");
+  const [notification, setNotification] = useState<any>(false);
+  const notificationListener = useRef<any>();
+  const responseListener = useRef<any>();
 
   const theme = useColorScheme();
 
@@ -114,7 +138,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
       auth,
       (user: any) => {
-        if (user) {
+        if (user && user.emailVerified) {
           setIsRegistered(true);
         } else {
           // User is signed out
@@ -154,7 +178,62 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     getAllItemDataStore();
+    setRequestData(
+      allData?.filter((item) =>
+        item?.interestedParties?.includes(userData?.id as string)
+      )
+    );
+    setDonorData(allData?.filter((item) => item?.donor === userData?.id));
+
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        setNotification(notification);
+      });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log(response);
+      });
+
+    return () => {
+      Notifications.removeNotificationSubscription(
+        notificationListener.current
+      );
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
   }, []);
+
+  async function registerForPushNotificationsAsync() {
+    let token;
+
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+      });
+    }
+
+    if (Device.isDevice) {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== "granted") {
+        alert("Failed to get push token for push notification!");
+        return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    } else {
+      alert("Must use physical device for Push Notifications");
+    }
+
+    return token;
+  }
 
   useEffect(() => {
     setRequestData(
@@ -239,6 +318,9 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       donorData,
       setDonorData,
       getLocation,
+      registerForPushNotificationsAsync,
+      expoPushToken,
+      setExpoPushToken,
     }),
     [
       userData,
@@ -266,6 +348,9 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       donorData,
       setDonorData,
       getLocation,
+      registerForPushNotificationsAsync,
+      expoPushToken,
+      setExpoPushToken,
     ]
   );
 

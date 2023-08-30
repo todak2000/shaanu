@@ -28,6 +28,7 @@ function CatalogScreenView() {
       value: "Two",
     },
   ];
+
   return (
     <>
       <Text style={styles.title}>{title}</Text>
