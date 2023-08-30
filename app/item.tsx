@@ -84,7 +84,6 @@ export default function DonationItemView() {
       getAllItemDataStore();
 
       getExpoToken(item?.donor as string).then((result) => {
-        console.log(result);
         const title = `Donation Confirmed! 📫`;
         const message = `Thank you for your generous donation. The recipient has confirmed the collection of the item. Your kindness has made a difference.`;
         if (result.statusCode === 200) {
@@ -112,7 +111,6 @@ export default function DonationItemView() {
         fetchData();
         getAllItemDataStore();
         getExpoToken(item?.donor as string).then((result) => {
-          console.log(result);
           const title = `${
             (item?.interestedParties as string[]).length > 1
               ? item?.interestedParties?.length + " Withdrawals"
@@ -188,7 +186,6 @@ export default function DonationItemView() {
         fetchData();
         getAllItemDataStore();
         getExpoToken(item?.donor as string).then((result) => {
-          console.log(result);
           const title = `${
             (item?.interestedParties as string[]).length > 1
               ? item?.interestedParties?.length + " Interests"

@@ -4,14 +4,10 @@
     "notification": {
       "icon": "./assets/images/icon.png",
       "color": "#ffffff",
-      "iosDisplayInForeground": true,
-      "sounds": [
-        "./assets/sound/correct.mp3",
-        "./assets/sound/correct.mp3"
-      ]
+      "iosDisplayInForeground": true
     },
     "slug": "shaanu_app",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -49,7 +45,7 @@
         "android.permission.WAKE_LOCK"
       ],
       "package": "com.todak2000.shaanu_app",
-      "versionCode": 2
+      "versionCode": 3
     },
     "web": {
       "bundler": "metro",
@@ -76,7 +72,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "********************"
+        "projectId": "6777f339-bc4d-4538-b0d3-2741766627ac"
       }
     }
   }

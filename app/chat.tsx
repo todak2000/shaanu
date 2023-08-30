@@ -86,7 +86,6 @@ export default function ChatView() {
             ? chatData?.recipientId
             : chatData?.donorId;
         getExpoToken(id as string).then((result) => {
-          console.log(result);
           const title = `New Message Alert! 📫`;
           const message = `You have a new message waiting for you. Check it out now!`;
           if (result.statusCode === 200) {

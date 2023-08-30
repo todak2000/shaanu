@@ -134,7 +134,6 @@ const InterestedPersonsList = ({
         setIsLoading(false);
 
         getExpoToken(recipientId).then((result) => {
-          console.log(result);
           const title = `Update on Your Selection!`;
           const message = `We regret to inform you that you have been deselected as a recipient for the donated item. Thank you for your interest and participation.`;
           if (result.statusCode === 200) {
@@ -172,7 +171,6 @@ const InterestedPersonsList = ({
       setCloseConfirmation(true);
       setIsLoading(false);
       getExpoToken(confirmation).then((result) => {
-        console.log(result);
         const title = `You’ve Been Selected!`;
         const message = `Congratulations! You have been selected to receive the donated item. Thank you for your interest and participation.`;
         if (result.statusCode === 200) {
