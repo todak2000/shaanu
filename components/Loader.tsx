@@ -1,12 +1,13 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, ActivityIndicator } from "react-native";
 import { primaryYellow } from "../constants/Colors";
-import AnimatedLoader from "./AnimatedLoader";
-
+// import AnimatedLoader from "./AnimatedLoader";
+// import { ActivityIndicator } from "react-native";
 const Loader = () => {
   return (
     <View style={styles.container}>
-      <AnimatedLoader duration={700} colors={[primaryYellow, primaryYellow]} />
+      <ActivityIndicator size="large" color={primaryYellow} />
+      {/* <AnimatedLoader duration={700} colors={[primaryYellow, primaryYellow]} /> */}
     </View>
   );
 };

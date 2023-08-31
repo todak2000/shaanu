@@ -33,6 +33,7 @@ const AnimatedLoader: React.FC<AnimatedSvgProps> = ({ duration, colors }) => {
   }, []);
 
   useEffect(() => {
+    fadeAnim.removeAllListeners();
     fadeAnim.addListener(({ value }) => {
       if (value === 1 || value === 0) {
         setColorIndex((prevIndex) => (prevIndex + 1) % colors.length);

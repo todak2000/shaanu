@@ -1,16 +1,11 @@
 {
   "expo": {
     "name": "Shaanu",
-    "notification": {
-      "icon": "./assets/images/icon.png",
-      "color": "#ffffff",
-      "iosDisplayInForeground": true
-    },
     "slug": "shaanu_app",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "shaanu",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -21,6 +16,8 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.todak2000.shaanuapp",
+      "icon": "./assets/images/icon96.png",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
@@ -31,6 +28,7 @@
       }
     },
     "android": {
+      "icon": "./assets/images/icon96.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -45,7 +43,7 @@
         "android.permission.WAKE_LOCK"
       ],
       "package": "com.todak2000.shaanu_app",
-      "versionCode": 3
+      "versionCode": 4
     },
     "web": {
       "bundler": "metro",
@@ -58,15 +56,23 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/icon.png",
-          "color": "#ffffff",
-          "sounds": [
-            "./assets/sound/correct.mp3",
-            "./assets/sound/correct.mp3"
-          ]
+          "icon": "./assets/images/adaptive-icon96.png", 
+          "color": "#FAB75D",
+          "sounds": [],
+          "androidMode": "default",
+          "androidCollapsedTitle": "Updates from Shaanu",
+          "iosDisplayInForeground": true,
+          "mode": "production"
         }
       ]
     ],
+    "notification": {
+      "icon": "./assets/images/adaptive-icon96.png", 
+      "color": "#FAB75D",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Updates from Shaanu",
+      "iosDisplayInForeground": true
+    },
     "experiments": {
       "typedRoutes": true
     },

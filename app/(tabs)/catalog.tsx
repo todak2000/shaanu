@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Wrapper from "../../components/Wrapper";
 import { Text, View } from "../../components/Themed";
 import { useStore } from "../store";
@@ -9,13 +9,22 @@ import { primaryYellow } from "../../constants/Colors";
 const title = "Catalog";
 
 function CatalogScreenView() {
-  const { theme, donorData, requestData } = useStore();
+  const { theme, donorData, requestData, setRequestData, setDonorData, allData, userData } = useStore();
   const [activeTab, setActiveTab] = useState("One");
 
   const handleTabPress = (tabName: string) => {
     setActiveTab(tabName);
   };
 
+  useEffect(() => {
+    setRequestData(
+      allData?.filter((item) =>
+        item?.interestedParties?.includes(userData?.id as string)
+      )
+    );
+    setDonorData(allData?.filter((item) => item?.donor === userData?.id));
+  }, [])
+  
   const tabArr = [
     {
       id: 1,
