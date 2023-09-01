@@ -47,6 +47,7 @@ const SignupForm = ({
     setLoading(true);
     actions.setSubmitting(false);
     const token = await registerForPushNotificationsAsync();
+    console.log(token, 'token')
     if (token) {
       setExpoPushToken(token as string);
       values.expoPushToken = token;
