@@ -17,7 +17,7 @@ import { wait } from "../utils";
 const title = "Profile";
 
 function SettingsScreenView() {
-  const { loading, theme, setLoading, curentLoc, userData, getLocation } =
+  const { loading, theme, setLoading, curentLoc, userData, getLocation, updateUser } =
     useStore();
   const [err, setErr] = useState("");
 
@@ -135,6 +135,7 @@ function SettingsScreenView() {
               />
             )} */}
           </View>
+
         </View>
         <Button
           onPress={SignOut}

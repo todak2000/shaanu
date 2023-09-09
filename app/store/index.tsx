@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { auth } from "../db/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { userDataProps } from "../db/apis";
+import { userDataProps, handleAddExpoToken } from "../db/apis";
 import useAsyncStorage from "../utils/hooks";
 import { useColorScheme, Platform } from "react-native";
 import { GridItem } from "../../components/Home/GridList";
@@ -59,6 +59,7 @@ export type StoreContextProps = {
   registerForPushNotificationsAsync: any;
   expoPushToken: string;
   setExpoPushToken: React.Dispatch<React.SetStateAction<string>>;
+  updateUser: any;
 };
 
 export const StoreContext = createContext<StoreContextProps>({
@@ -90,6 +91,7 @@ export const StoreContext = createContext<StoreContextProps>({
   registerForPushNotificationsAsync: () => null,
   expoPushToken: "",
   setExpoPushToken: () => null,
+  updateUser: ()=> null
 });
 
 Notifications.setNotificationHandler({
@@ -134,12 +136,32 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  const updateUser = async()=>{
+    const token = await registerForPushNotificationsAsync();
+    let  x: any;
+    const data = {
+      userId:userData.id, 
+      token: token as string
+    }
+    if (token) {
+      x = await handleAddExpoToken(data)
+    }
+    setExpoPushToken(x.token)
+    setUserData((prevData: userDataProps)=>({...prevData, expoPushToken:x.token}))
+    console.log(x.token)
+    return x
+  
+  }
   useEffect(() => {
     const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
       auth,
       (user: any) => {
         if (user && user.emailVerified) {
           setIsRegistered(true);
+          // console.log(userData, "jhj")
+          if (userData.expoPushToken === '') {
+            updateUser();
+          }
         } else {
           // User is signed out
           setUserData({});
@@ -321,6 +343,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       registerForPushNotificationsAsync,
       expoPushToken,
       setExpoPushToken,
+      updateUser
     }),
     [
       userData,
@@ -351,6 +374,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       registerForPushNotificationsAsync,
       expoPushToken,
       setExpoPushToken,
+      updateUser
     ]
   );
 

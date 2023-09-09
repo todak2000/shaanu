@@ -3,6 +3,7 @@ import {
   FontAwesome,
   Ionicons,
 } from "@expo/vector-icons";
+import { useEffect } from "react";
 import { Link, Tabs } from "expo-router";
 import { Pressable, useColorScheme } from "react-native";
 import Colors, { primaryYellow } from "../../constants/Colors";
@@ -46,11 +47,19 @@ function TabBarIcon(props: { name: any; color: string }) {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { isRegistered, loading, theme } = useStore();
+  const { isRegistered, loading, theme, updateUser, userData } = useStore();
   if (!isRegistered && !loading) {
     return <OnboardingScreen />;
   } else if (!isRegistered && loading) {
     return <Loader />;
+  }
+
+  // useEffect(() => {
+    
+    
+  // },[])
+  if (userData?.expoPushToken === "") {
+    updateUser()
   }
 
   return (

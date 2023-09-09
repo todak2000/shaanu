@@ -812,3 +812,27 @@ export const getExpoToken = async (
     };
   }
 };
+
+
+
+// Update User - add expo Token 
+export const handleAddExpoToken = async (
+  data: {userId: string, token: string}
+): Promise<{ statusCode: number; message: string, token?: string } | undefined> => {
+  try {
+    const updateRef = doc(db, "Users", data.userId);
+
+      await setDoc(
+        updateRef,
+        {
+          expoPushToken: data.token,
+        },
+        { merge: true }
+      );
+      return { statusCode: 200, message: "Expo token successfully added!", token: data.token };
+    
+  } catch (error: any) {
+
+    return { statusCode: 500, message:"Oops! an error occured" };
+  }
+};

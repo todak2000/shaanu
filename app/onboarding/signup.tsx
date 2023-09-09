@@ -31,6 +31,7 @@ const SignupForm = ({
     userData,
     registerForPushNotificationsAsync,
     setExpoPushToken,
+    updateUser
   } = useStore();
 
   useEffect(() => {
@@ -46,6 +47,21 @@ const SignupForm = ({
   ) => {
     setLoading(true);
     actions.setSubmitting(false);
+    // handleSignUpAuth(values).then((res) => {
+    //   Alert.alert("Welcome! kindly check your email to verify your account");
+    //   if (res?.statusCode === 200) {
+    //     setUserData(res?.userData);
+    //   } else if (res?.statusCode === 409) {
+    //     Alert.alert(
+    //       "Oops! The email already exist in our databse. Please Signin"
+    //     );
+    //   } else {
+    //     Alert.alert("Oops! an error occurred");
+    //   }
+     
+    //   setLoading(false);
+    //   updateUser();
+    // });
     const token = await registerForPushNotificationsAsync();
     console.log(token, 'token')
     if (token) {

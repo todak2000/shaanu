@@ -296,6 +296,7 @@ export default function DonationItemView() {
                 />
                 <Text style={styles.disbaledText}>{item?.status}</Text>
               </View>
+              {item?.location &&
               <View
                 style={[
                   styles.disabled,
@@ -311,6 +312,7 @@ export default function DonationItemView() {
                 />
                 <Text style={styles.disbaledText}>{item?.location}</Text>
               </View>
+            }
               <View
                 style={[
                   styles.disabled,

@@ -18,7 +18,7 @@ const SigninForm = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { loading, setLoading, setUserData, userData, theme } = useStore();
+  const { loading, setLoading, setUserData, userData, theme, updateUser } = useStore();
 
   useEffect(() => {
     if (userData?.id) {
@@ -31,7 +31,7 @@ const SigninForm = ({
     actions: FormikHelpers<FormValues>
   ) => {
     setLoading(true);
-
+    
     actions.setSubmitting(false);
     handleSignInAuth(values).then((res) => {
       if (res?.statusCode === 200 && res?.userData?.isVerified) {
@@ -50,6 +50,7 @@ const SigninForm = ({
         Alert.alert("Oops! an error occurred");
       }
       setLoading(false);
+      updateUser();
     });
   };
 
