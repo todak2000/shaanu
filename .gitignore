@@ -19,7 +19,7 @@ eas.json
 note.txt
 # Metro
 .metro-health-check*
-google-services.json
+# google-services.json
 # debug
 npm-debug.*
 yarn-debug.*
