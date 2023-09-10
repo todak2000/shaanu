@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, Alert } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity} from "react-native";
 import Button from "../../components/Button";
 import { Formik, FormikHelpers } from "formik";
 import CustomTextInput from "../../components/TextInput";
@@ -31,41 +31,72 @@ const SignupForm = ({
     userData,
     registerForPushNotificationsAsync,
     setExpoPushToken,
+    isRegistered,
+    setAlertMessage,
+    setAlertTitle,
+    showAlert
   } = useStore();
 
   useEffect(() => {
-    if (userData?.id) {
+    if (isRegistered) {
       setScreen(0);
-    } else {
-      setScreen(2);
+    } 
+    if (loading) {
+      setTimeout(() => {
+        setLoading(false)
+        setAlertMessage("Oops! an error occurred. Try again")
+        setAlertTitle("Network Issues!")
+        showAlert()
+       
+      }, 10000);
     }
   });
+
   const handleSubmit = async (
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
+    setScreen(2)
     setLoading(true);
     actions.setSubmitting(false);
+  
     
-    const token = await registerForPushNotificationsAsync();
-    console.log(token, 'token')
 
-    setExpoPushToken(token as string);
-    values.expoPushToken = token;
-    handleSignUpAuth(values).then((res) => {
-      
+    try {
+      const token  = await registerForPushNotificationsAsync()
+      console.log(token, 'token')
+
+      setExpoPushToken(token as string);
+      values.expoPushToken = token ? token : "";
+  
+      const res: any = await handleSignUpAuth(values)
+
       if (res?.statusCode === 200) {
-        Alert.alert("Welcome! Please check your email to verify your account. Thank you.");
+        setAlertMessage("Welcome! Please check your email to verify your account. Thank you.")
+        setAlertTitle("Yah! one more hurdle to cross")
+        showAlert()
+        setLoading(false);
         setUserData(res?.userData);
       } else if (res?.statusCode === 409) {
-        Alert.alert(
-          "We're sorry, but the email you entered already exists in our database. Please consider signing in to access your account."
-        );
+        setAlertMessage("We're sorry, but the email you entered already exists in our database. Please consider signing in to access your account.")
+        setAlertTitle("You have an Account Already!")
+        showAlert()
+        setLoading(false);
       } else {
-        Alert.alert("Oops! an error occurred");
+        console.log(res, "sdsdsdsdssds-----------")
+        setAlertMessage("Oops! an error occurred.")
+        setAlertTitle("Unknown Error!")
+        showAlert()
+        setLoading(false);
       }
+      
+      
+    } catch (error) {
+      setAlertMessage("Oops! an error occurred. Try again")
+      setAlertTitle("Network Issues!")
+      showAlert()
       setLoading(false);
-    });
+    }
   };
 
   return (

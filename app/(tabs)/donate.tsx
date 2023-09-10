@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Alert,
   StyleSheet,
   Platform,
   Image,
@@ -39,7 +38,10 @@ const DonateScreen = () => {
   const [isImageError, setIsImageError] = useState<string>("");
   const [localLoading, setLocalLoading] = useState(false);
   const [isSelect, setIselect] = useState(false);
-  const { theme, curentLoc, loading, setLoading, userData, getLocation } =
+  const { 
+    theme, curentLoc, loading, setLoading, userData, getLocation,
+    setAlertMessage, setAlertTitle, showAlert
+   } =
     useStore();
 
   const resizeImage = async (
@@ -109,9 +111,13 @@ const DonateScreen = () => {
 
       handleDonate(data).then((res) => {
         if (res) {
-          Alert.alert(res?.message);
+          setAlertMessage(res?.message)
+          setAlertTitle("Donation Updates")
+          showAlert()
         } else {
-          Alert.alert("Oops! an error occurred");
+          setAlertMessage("Oops! an error occurred")
+          setAlertTitle("NetWork Issues!")
+          showAlert()
         }
         setLoading(false);
         setImages([]);

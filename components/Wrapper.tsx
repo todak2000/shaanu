@@ -21,19 +21,19 @@ const Wrapper = (
     }, []);
 
     const onSwipeDown = (event:any) => {
-      console.log(event.nativeEvent.contentOffset.y);
+      // console.log(event.nativeEvent.contentOffset.y);
       if (event.nativeEvent.contentOffset.y < 0) { // you can replace zero with needed threshold
         onRefreshCallBack(); //your refresh function
-        console.log("refere")
+        // console.log("refere")
       }
     };
     return (
       <SafeAreaView style={[styles.safeContainer, { backgroundColor: theme === "dark" ? "transparent" : "#fff" }]}>
         <ScrollView
           contentContainerStyle={styles.container}
-          bounces={true}
+          bounces={false}
           onScroll={onSwipeDown}
-          scrollEventThrottle={16}
+          scrollEventThrottle={20}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

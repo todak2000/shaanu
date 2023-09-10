@@ -41,3 +41,9 @@ export const sendExpoNotification = async(to: string, title: string, body: strin
   });
   return response.json();
 }
+
+// export const timeoutPromise = new Promise((resolve, reject) => {
+//   setTimeout(() => {
+//     reject(new Error("Oops! an error occurred. Try again"));
+//   }, 10000);
+// });

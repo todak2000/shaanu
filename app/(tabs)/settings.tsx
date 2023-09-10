@@ -1,4 +1,4 @@
-import { StyleSheet, View, Alert } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useStore } from "../store";
 import { Text, TouchableOpacity } from "../../components/Themed";
 import Button from "../../components/Button";
@@ -14,23 +14,18 @@ import { useState, useEffect } from "react";
 import Card from "../../components/Settings/Card";
 import IndicatorLoader from "../../components/IndicatorLoader";
 import { wait } from "../utils";
-import { isLoaded } from "expo-font";
+import { useRouter } from "expo-router";
 
 const title = "Profile";
 
 function SettingsScreenView() {
-  const { loading, theme, expoPushToken, setLoading, curentLoc, userData, getLocation, updateUser, deleteToken, setExpoPushToken  } =
+  const router = useRouter()
+  const { loading, theme, expoPushToken, setLoading, curentLoc, userData, getLocation, updateUser, deleteToken, setExpoPushToken, setIsRegistered, setAlertMessage, setAlertTitle, showAlert  } =
     useStore();
   const [err, setErr] = useState("");
-  const [notification, setNotification] = useState<boolean>(false);
+  const [notification, setNotification] = useState<boolean>(expoPushToken !== "" ? true : false);
   const [deletePrompt, setDeletePrompt] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (expoPushToken !== "") {
-      setNotification(true)
-    }
-  }, [expoPushToken])
-  
 
   useEffect(() => {
     wait(5000).then(() => {
@@ -44,6 +39,11 @@ function SettingsScreenView() {
   }, [curentLoc]);
 
   const SignOut = () => {
+    
+    setIsRegistered(false)
+    setLoading(true);
+    router.push('/onboarding');
+    setLoading(false);
     handleSignOut().then(() => {
       setLoading(false);
     });
@@ -53,7 +53,7 @@ function SettingsScreenView() {
     if (value === "activate") {
       setNotification(true)
       await updateUser().then((res: any)=>{
-        if (!res?.token && res.statusCode !== 200){
+        if (res.statusCode !== 200){
           setNotification(false)
           setExpoPushToken("")
           
@@ -63,7 +63,6 @@ function SettingsScreenView() {
     else{
       setNotification(false)
       await deleteToken().then((res: any)=>{
-        // console.log(res, 'res')
         if (res !== 200){
           setNotification(true)
           setExpoPushToken(userData?.expoPushToken as string)
@@ -82,7 +81,9 @@ function SettingsScreenView() {
       } else if (res === 200) {
         console.log("done");
       } else {
-        Alert.alert("Oops! Something went wrong");
+        setAlertMessage("Oops! an error occurred")
+        setAlertTitle("Unknown Error!")
+        showAlert()
       }
       setLoading(false);
     });
@@ -112,8 +113,7 @@ function SettingsScreenView() {
 
   return (
     <>
-      
-      <View style={styles.container}>
+      <View style={[styles.container, {height: '100%'}]}>
       <Text style={styles.title}>{title}</Text>
         <View style={styles.header}>
           <Text
@@ -186,14 +186,20 @@ function SettingsScreenView() {
             }
           </View>
         </View>
+        {loading ? 
+        <IndicatorLoader />
+        :
+        <>{!deletePrompt &&
         <Button
           onPress={SignOut}
           title="Sign out"
           icon={false}
           color={theme === "dark" ? primaryYellow : "black"}
           theme={theme}
+          isLoading={loading}
         />
-
+        }</>
+        }
         {deletePrompt ? 
         <>
           {loading ? 
@@ -233,6 +239,8 @@ function SettingsScreenView() {
             </Text>
         </TouchableOpacity>
         }
+       
+       
         {/* {err !== "" && <Text style={styles.err}>{err}</Text>} */}
       </View>
     </>
@@ -242,6 +250,7 @@ function SettingsScreenView() {
 const SettingsScreen = Wrapper(SettingsScreenView);
 
 export default SettingsScreen;
+
 const styles = StyleSheet.create({
   deleteText: {
     fontSize: 15,
@@ -284,6 +293,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: "5%",
+    // backgroundColor:"#f0f",
+
   },
   header: {},
   row: {
@@ -292,8 +303,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 8,
     paddingBottom: 8,
-    marginBottom:10,
-    marginTop: 10,
+    // marginBottom:10,
+    // marginTop: 10,
   },
   rowInner: {
     flexDirection: "row",

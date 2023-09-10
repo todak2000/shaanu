@@ -10,13 +10,14 @@ import GeneralScreen from "./general";
 import { useStore } from "../store";
 import { wait } from "../utils";
 import StaticLoader from "../../components/StaticLoader";
-
+import CustomAlert from "../../components/CustomAlert";
+import IndicatorLoader from "../../components/IndicatorLoader";
 export default function OnboardingScreen() {
   const [screen, setScreen] = useState<number>(6);
   const [title, setTitle] = useState<string>("Sign In");
   const [subTitle, setSubTitle] = useState<string>("Welcome Back!");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { isRegistered } = useStore();
+  const { isRegistered, alertVisible, alertTitle, alertMessage, hideAlert } = useStore();
 
   useEffect(() => {
     if (isRegistered) {
@@ -54,9 +55,15 @@ export default function OnboardingScreen() {
   return (
     <>
       {isLoading ? (
-        <StaticLoader />
+       <IndicatorLoader /> //<StaticLoader /> 
       ) : (
         <View style={styles.container}>
+          <CustomAlert
+          title={alertTitle}
+          message={alertMessage}
+          visible={alertVisible}
+          onClose={hideAlert}
+        />
           <Logo color={primaryYellow} />
           {screen !== 0 && (
             <>

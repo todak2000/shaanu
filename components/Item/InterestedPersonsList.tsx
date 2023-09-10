@@ -98,7 +98,7 @@ const InterestedPersonsList = ({
   itemName,
   updateItem,
 }: interestPersonsProps) => {
-  const { theme, userData, fetchData, setData, setLastDoc } = useStore();
+  const { theme, userData, fetchData, setData, setLastDoc, setAlertMessage, setAlertTitle, showAlert } = useStore();
   const [closeConfirmation, setCloseConfirmation] = useState<boolean>(
     reciever !== "" ? true : false
   );
@@ -116,7 +116,9 @@ const InterestedPersonsList = ({
   const removeReciever = (recipientId: string) => {
     setClickedItem(recipientId);
     if (recipientId === "") {
-      Alert.alert("I’m sorry, but it seems that you are unable to initiate this chat. ");
+      setAlertMessage("Appologies, but it seems that you are unable to initiate this chat. ")
+        setAlertTitle("Unauthorzied Access!")
+        showAlert()
     } else {
       setIsLoading(true);
       const data = {
@@ -128,7 +130,9 @@ const InterestedPersonsList = ({
         setData([]);
         setLastDoc(null);
         fetchData();
-        Alert.alert(res?.message);
+        setAlertMessage(res?.message)
+        setAlertTitle("Interest Updates")
+        showAlert()
         setConfirmation(reciever);
         setCloseConfirmation(false);
         setIsLoading(false);
@@ -167,7 +171,9 @@ const InterestedPersonsList = ({
       setData([]);
       setLastDoc(null);
       fetchData();
-      Alert.alert(res?.message);
+      setAlertMessage(res?.message)
+        setAlertTitle("Interest Updates")
+        showAlert()
       setCloseConfirmation(true);
       setIsLoading(false);
       getExpoToken(confirmation).then((result) => {

@@ -11,14 +11,12 @@ const GeneralScreen = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { loading, theme, userData } = useStore();
+  const { loading, theme, userData,isRegistered  } = useStore();
 
   useEffect(() => {
-    if (userData?.id) {
-      setScreen(0);
-    } else {
+    if (!isRegistered) {
       setScreen(1);
-    }
+    } 
   });
 
   const handleRedirect = () => {

@@ -1,5 +1,4 @@
 import {
-  Alert,
   SafeAreaView,
   StyleSheet,
   Dimensions,
@@ -45,6 +44,9 @@ export default function DonationItemView() {
     setData,
     setLoading,
     setLastDoc,
+    setAlertMessage,
+    setAlertTitle,
+    showAlert
   } = useStore();
   const navigation = useRouter();
 
@@ -53,7 +55,9 @@ export default function DonationItemView() {
 
   const intiateChat = (recipientId: string) => {
     if (recipientId === "") {
-      Alert.alert("Apologies, but you are unable to initiate this chat at the moment.");
+      setAlertMessage("Apologies, but you are unable to initiate this chat at the moment.")
+        setAlertTitle("Unauthorized Access!")
+        showAlert()
     } else {
       router.replace({
         pathname: "/chat",
@@ -75,7 +79,9 @@ export default function DonationItemView() {
     };
     const res = await handleConfirmDelivery(data);
     if (res?.statusCode === 200) {
-      Alert.alert(res?.message as string);
+        setAlertMessage(res?.message as string)
+        setAlertTitle("Delievery Confirmation")
+        showAlert()
       setLoading(false);
       setData([]);
       setLastDoc(null);
@@ -170,6 +176,7 @@ export default function DonationItemView() {
     }));
     setIsInterested(false);
   };
+  // console.log(userData, 'user data item')
   const handleConfirmInterest = async () => {
     handleConfirmInterestLocal();
 
@@ -177,6 +184,7 @@ export default function DonationItemView() {
 
     if ((item?.interestedParties as string[]).length < 5) {
       const res = await handlePotentialInterest(data);
+      // console.log(res,"itme ress")
       if (res?.statusCode === 200) {
         setLoading(false);
         setData([]);
@@ -206,9 +214,9 @@ export default function DonationItemView() {
         handleConfirmInterestLocalReverse();
       }
     } else {
-      Alert.alert(
-        "We regret to inform you that the interest quota has been exceeded. We apologize for any inconvenience this may have caused. Thank you for your understanding."
-      );
+      setAlertMessage("We regret to inform you that the interest quota has been exceeded. We apologize for any inconvenience this may have caused. Thank you for your understanding.")
+        setAlertTitle("Unconfirmed Interest")
+        showAlert()
     }
   };
 

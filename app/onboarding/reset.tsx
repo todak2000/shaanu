@@ -18,14 +18,12 @@ const ResetForm = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { loading, theme, setLoading, userData } = useStore();
+  const { loading, theme, setLoading, userData, isRegistered, setAlertMessage, setAlertTitle, showAlert } = useStore();
 
   useEffect(() => {
-    if (userData?.id) {
-      setScreen(0);
-    } else {
-      setScreen(3);
-    }
+    if (!isRegistered) {
+      setScreen(1);
+    } 
   });
 
   const handleSubmit = (
@@ -36,13 +34,17 @@ const ResetForm = ({
     actions.setSubmitting(false);
     handlePasswordReset(values).then((res) => {
       if (res === 200) {
-        Alert.alert("A password reset link has been sent to your email.");
+        setAlertMessage("A password reset link has been sent to your email.")
+        setAlertTitle("Reset Password Updates!")
+        showAlert()
       } else if (res === 404) {
-        Alert.alert(
-          "We’re sorry, but the email you entered does not exist in our database. Please consider signing up to create an account."
-        );
+        setAlertMessage("We’re sorry, but the email you entered does not exist in our database. Please consider signing up to create an account.")
+        setAlertTitle("Reset Password Updates!")
+        showAlert()
       } else {
-        Alert.alert("Oops! an error occurred");
+        setAlertMessage("Oops! an error occurred")
+        setAlertTitle("Unknown Error!")
+        showAlert()
       }
       setLoading(false);
     });

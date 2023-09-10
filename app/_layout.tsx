@@ -7,7 +7,7 @@ import {
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
-import { useColorScheme } from "react-native";
+import { useColorScheme, LogBox } from "react-native";
 import { StoreProvider } from "./store";
 
 export { ErrorBoundary } from "expo-router";
@@ -15,6 +15,12 @@ export { ErrorBoundary } from "expo-router";
 export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
+
+// Ignore log notifications by message:
+LogBox.ignoreLogs(['[2023-09-10T22:35:05.776Z]  @firebase/firestore: Firestore (10.3.0): Uncaught Error in snapshot listener: FirebaseError: [code=permission-denied]: Missing or insufficient permissions.',
+"TypeError: Cannot read property 'indexOf' of undefined",
+"Possible Unhandled Promise Rejection (id: 62):"
+]); 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -66,7 +72,9 @@ function RootLayoutNav() {
             options={{ presentation: "modal", headerShown: false }}
           />
           <Stack.Screen name="chat" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
         </Stack>
+        
       </ThemeProvider>
     </StoreProvider>
   );

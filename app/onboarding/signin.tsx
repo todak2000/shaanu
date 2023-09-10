@@ -7,7 +7,6 @@ import { useStore } from "../store";
 import { handleSignInAuth } from "../db/apis";
 import { SigninSchema } from "../utils/yup";
 import { primaryRed, primaryYellow } from "../../constants/Colors";
-
 interface FormValues {
   email: string;
   password: string;
@@ -18,45 +17,72 @@ const SigninForm = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { loading, setLoading, setUserData, userData, theme  } = useStore();
+  const { setExpoPushToken, loading, setLoading, setUserData, userData, theme, showAlert, setAlertMessage,setAlertTitle, isRegistered } = useStore();
 
   useEffect(() => {
-    if (userData?.id) {
+    if (isRegistered) {
       setScreen(0);
     }
+
   });
   
-  const handleSubmit = (
+  const handleSubmit = async (
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
     setLoading(true);
-    
     actions.setSubmitting(false);
-    handleSignInAuth(values).then((res) => {
+  
+    // const timeoutPromise = new Promise((resolve, reject) => {
+    //   setTimeout(() => {
+    //     setLoading(false)
+    //     reject(new Error("Oops! Something went wrong"));
+    //   }, 10000);
+    // });
+  
+    // const signInPromise = handleSignInAuth(values);
+  
+    try {
+      const res: any  = await handleSignInAuth(values)
+
+      // const res: any = await Promise.race([timeoutPromise, signInPromise]);
+      setLoading(false);
       if (res?.statusCode === 200 && res?.userData?.isVerified) {
         setUserData(res?.userData);
+        setExpoPushToken(res?.userData.expoPushToken)
       } else if (res?.statusCode === 200 && !res?.userData?.isVerified) {
-        Alert.alert(
-          "Please check your email to verify your account. Thank you."
-        );
-      }else if (res?.statusCode === 404) {
-        Alert.alert(
-          "We're sorry, but the email you entered does not exist in our database. Please consider signing up to create an account."
-        );
+        setAlertMessage("Please check your email to verify your account. Thank you.")
+        setAlertTitle("Verify your Account!")
+        showAlert()
+      } else if (res?.statusCode === 404) {
+        setAlertMessage("We're sorry, but the email you entered does not exist in our database. Please consider signing up to create an account.")
+        setAlertTitle("Wrong Email!")
+        showAlert()
       } else if (res?.statusCode === 401) {
-        Alert.alert("Apologies, but the password you entered is incorrect. Please try again.");
+        setAlertMessage("Apologies, but the password you entered is incorrect. Please try again.")
+        setAlertTitle("Wrong Password")
+        showAlert()
+        
       } else {
-        Alert.alert("Oops! an error occurred");
+        // console.log(res, "unknonw")
+        setAlertMessage("Oops! an error occurred")
+        setAlertTitle("Unknown Error!")
+        showAlert()
       }
-      setLoading(false);
-    });
+      
+      
+    } catch (error) {
+      setAlertMessage("We’re sorry, but it seems like there are some network issues preventing you from logging in. Please try again in a few moments")
+        setAlertTitle("Network Issues!")
+        showAlert()
+    }
   };
-
+ 
   return (
     <View style={styles.container}>
+      
       <Formik
-        initialValues={{ password: "", email: "" }}
+        initialValues={{ password: "daniel12345", email: "todak2000@gmail.com" }}
         validationSchema={SigninSchema}
         onSubmit={handleSubmit}
       >
@@ -132,6 +158,8 @@ const styles = StyleSheet.create({
   },
   redirect: {
     marginTop: 20,
+    marginBottom: 20,
+    fontSize: 16,
     textAlign: "center",
     color: "#232323",
     fontFamily: "MuseoRegular",

@@ -44,7 +44,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
           <MaterialIcons
             name={showPassword ? "visibility" : "visibility-off"}
             color="#ccc"
-            size={20}
+            size={30}
           />
         </TouchableOpacity>
       )}
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   },
   default: {
     flex: 1,
-    height: 48,
+    height: 55,
     padding: 10,
     borderColor: "transparent",
     borderWidth: 0.5,
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   icon: {
     position: "absolute",
     right: 20,
-    top: 15,
+    top: 13,
   },
 });
 

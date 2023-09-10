@@ -21,6 +21,7 @@ import {
   where,
   orderBy,
   limit,
+  doc,
   startAfter,
   onSnapshot,
   getDocs,
@@ -61,6 +62,15 @@ export type StoreContextProps = {
   setExpoPushToken: React.Dispatch<React.SetStateAction<string>>;
   updateUser: any;
   deleteToken: any;
+  alertVisible: boolean, 
+  setAlertVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  showAlert: any;
+  hideAlert: any;
+  alertMessage: string, 
+  setAlertMessage: React.Dispatch<React.SetStateAction<string>>;
+  alertTitle: string, 
+  setAlertTitle: React.Dispatch<React.SetStateAction<string>>;
+  
 };
 
 export const StoreContext = createContext<StoreContextProps>({
@@ -93,7 +103,15 @@ export const StoreContext = createContext<StoreContextProps>({
   expoPushToken: "",
   setExpoPushToken: () => null,
   updateUser: ()=> null,
-  deleteToken: ()=> null
+  deleteToken: ()=> null,
+  alertVisible: false, 
+  setAlertVisible: ()=> null,
+  showAlert: ()=> null,
+  hideAlert: ()=> null,
+  alertMessage: '', 
+  setAlertMessage: ()=> null,
+  alertTitle: '', 
+  setAlertTitle: ()=> null,
 });
 
 Notifications.setNotificationHandler({
@@ -121,28 +139,58 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const [notification, setNotification] = useState<any>(false);
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
+  const [alertVisible, setAlertVisible] = useState<boolean>(false);
+  const [alertTitle, setAlertTitle] = useState<string>("");
+  const [alertMessage, setAlertMessage] = useState<string>("");
+
+  
 
   const theme = useColorScheme();
 
-  const getAllItemDataStore = async () => {
-    const boardDB = collection(db, "Inventory");
-    onSnapshot(boardDB, (querySnapshot) => {
-      if (querySnapshot) {
-        setAllData(() => {
-          const newData = querySnapshot.docs.map(
-            (doc) => ({ id: doc.id, ...doc.data() } as GridItem)
-          );
-          return newData;
-        });
-      }
-    });
+  const showAlert = () => {
+    setAlertVisible(true);
   };
 
+  const hideAlert = () => {
+    setAlertVisible(false);
+  };
+
+  const getAllItemDataStore = async () => {
+    
+    if (auth.currentUser) {
+      const boardDB = collection(db, "Inventory");
+      onSnapshot(boardDB, (querySnapshot) => {
+        if (querySnapshot) {
+          setAllData(() => {
+            const newData = querySnapshot.docs.map(
+              (doc) => ({ id: doc.id, ...doc.data() } as GridItem)
+            );
+            return newData;
+          });
+        }
+      });
+    }
+    
+  };
+
+  const getUserData = () => {
+    
+    if (auth.currentUser) {
+      const userDataRef = doc(db, "Users", userData.id);
+      onSnapshot(userDataRef, (querySnapshot) => {
+        if (querySnapshot) {
+          const updatedUser: any = { id: userData.id, ...querySnapshot.data() }
+          setUserData(updatedUser);
+        }
+      });
+    }
+  }
+  
   const deleteToken = async () => {
     try {
       let x = await handleRemoveExpoToken(userData.id);
       setExpoPushToken("");
-      return x?.statusCode
+      return x
     } catch (error: any) {
       console.error(error);
       return error.statusCode;
@@ -162,7 +210,6 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         x = await handleAddExpoToken(data);
       }
       setExpoPushToken(x.token);
-      setUserData((prevData: userDataProps) => ({ ...prevData, expoPushToken: x.token }));
       return x;
     } catch (error) {
       return null;
@@ -175,8 +222,8 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       auth,
       (user: any) => {
         if (user && user.emailVerified) {
+          getUserData();
           setIsRegistered(true);
-          
         } else {
           // User is signed out
           setUserData({});
@@ -221,7 +268,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       )
     );
     setDonorData(allData?.filter((item) => item?.donor === userData?.id));
-
+    
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         setNotification(notification);
@@ -359,7 +406,15 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       expoPushToken,
       setExpoPushToken,
       updateUser,
-      deleteToken
+      deleteToken,
+      alertVisible, 
+      setAlertVisible,
+      showAlert,
+      hideAlert,
+      alertMessage, 
+      setAlertMessage,
+      alertTitle, 
+      setAlertTitle,
     }),
     [
       userData,
@@ -391,7 +446,15 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       expoPushToken,
       setExpoPushToken,
       updateUser,
-      deleteToken
+      deleteToken,
+      alertVisible, 
+      setAlertVisible,
+      showAlert,
+      hideAlert,
+      alertMessage, 
+      setAlertMessage,
+      alertTitle, 
+      setAlertTitle
     ]
   );
 

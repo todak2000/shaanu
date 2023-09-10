@@ -96,7 +96,7 @@ type chatCorrespondenceProps = {
   userId: string;
 };
 
-const auth: any = getAuth(app);
+export const auth: any = getAuth(app);
 
 // Delete User Account
 export const handleDeleteAccount = async (userId: string): Promise<number> => {
@@ -136,13 +136,10 @@ export const handleSignOut = async (): Promise<number> => {
   }
 };
 
-// User Signup
+ // User Signup
 export const handleSignUpAuth = async (
   data: any
 ): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
-  let statusCode: number;
-  let userData: userDataProps;
-
   try {
     const userCredentials = await createUserWithEmailAndPassword(
       auth,
@@ -153,7 +150,7 @@ export const handleSignUpAuth = async (
     if (userCredentials.user) {
       let id = `SHA${Crypto.randomUUID()}`;
       const newUser = doc(db, "Users", id);
-      userData = {
+      const userData: userDataProps = {
         id: id,
         firstname: data.firstname,
         lastname: data.lastname,
@@ -179,27 +176,97 @@ export const handleSignUpAuth = async (
           expoPushToken: data.expoPushToken,
         },
         { merge: true }
-      ).then(() => {
-        sendEmailVerification(auth.currentUser);
-      });
-      statusCode = 200;
-      return { statusCode, userData };
+      )
+      // .then(() => {
+        
+      // }).catch(async()=> await deleteUser(auth.currentUser));
+      await sendEmailVerification(auth.currentUser);
+      return { statusCode: 200, userData };
     }
   } catch (error: any) {
+    let statusCode;
     switch (error.message) {
       case "Firebase: Error (auth/email-already-exists).":
         statusCode = 409;
         break;
-
+      case "Firebase: Error (auth/email-already-in-use).":
+        statusCode = 409;
+        break;
       default:
         statusCode = 501;
         break;
     }
 
-    userData = null;
-    return { statusCode, userData };
+    return { statusCode, userData: null };
   }
 };
+
+// export const handleSignUpAuth = async (
+//   data: any
+// ): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
+//   let statusCode: number;
+//   let userData: userDataProps;
+
+//   try {
+//     const userCredentials = await createUserWithEmailAndPassword(
+//       auth,
+//       data.email.toLocaleLowerCase(),
+//       data.password
+//     );
+
+//     if (userCredentials.user) {
+//       let id = `SHA${Crypto.randomUUID()}`;
+//       const newUser = doc(db, "Users", id);
+//       userData = {
+//         id: id,
+//         firstname: data.firstname,
+//         lastname: data.lastname,
+//         phone: data.phoneNumber,
+//         email: data.email.toLocaleLowerCase(),
+//         isVerified: userCredentials.user.emailVerified,
+//         isActive: true,
+//         donated: 0,
+//         recieved: 0,
+//         expoPushToken: data.expoPushToken,
+//       };
+//       await setDoc(
+//         newUser,
+//         {
+//           firstname: data.firstname,
+//           lastname: data.lastname,
+//           phone: data.phoneNumber,
+//           email: data.email.toLocaleLowerCase(),
+//           isVerified: userCredentials.user.emailVerified,
+//           isActive: true,
+//           donated: increment(0),
+//           recieved: increment(0),
+//           expoPushToken: data.expoPushToken,
+//         },
+//         { merge: true }
+//       ).then(() => {
+//         sendEmailVerification(auth.currentUser);
+//       }).catch(async()=> await deleteUser(auth.currentUser));
+//       statusCode = 200;
+//       return { statusCode, userData };
+//     }
+//   } catch (error: any) {
+//     // console.log(error, 'erererere======----')
+//     switch (error.message) {
+//       case "Firebase: Error (auth/email-already-exists).":
+//         statusCode = 409;
+//         break;
+//       case "Firebase: Error (auth/email-already-in-use).":
+//         statusCode = 409;
+//         break;
+//       default:
+//         statusCode = 501;
+//         break;
+//     }
+
+//     userData = null;
+//     return { statusCode, userData };
+//   }
+// };
 
 // User Sign in
 export const handleSignInAuth = async (
@@ -218,7 +285,9 @@ export const handleSignInAuth = async (
       userDB,
       where("email", "==", userCredentials.user?.email)
     );
+    
     const querySnapshot = await getDocs(userQuery);
+    
     if (querySnapshot.docs.length === 1) {
       statusCode = 200;
       userData = {
@@ -549,6 +618,7 @@ export const handlePotentialInterest = async (data: {
 }): Promise<{ statusCode: number; message: string } | undefined> => {
   try {
     const interestRef = doc(db, "Inventory", data.id);
+    console.log(data.userId, "error handle interest")
     const checkRef = await getDoc(interestRef);
     if (checkRef.data()?.interestedParties.length < 5) {
       const res = await setDoc(
@@ -570,6 +640,7 @@ export const handlePotentialInterest = async (data: {
       };
     }
   } catch (error: any) {
+    
     return { statusCode: 501, message: "Oops! an error occurred" };
   }
 };
@@ -702,23 +773,25 @@ export const handleGetAllChat = async (
   chatId: string
 ): Promise<{ statusCode: number; chatData: chatProps | null } | undefined> => {
   let chatData: chatProps;
-  try {
-    const chatt = doc(db, "Chat", chatId);
-    onSnapshot(chatt, (querySnapshot) => {
-      if (querySnapshot) {
-        chatData = {
-          chatId: chatId,
-          donorId: querySnapshot.data()?.donorId,
-          itemName: querySnapshot.data()?.itemName,
-          recipientId: querySnapshot.data()?.recipientId,
-          chatCorrespondence: querySnapshot.data()?.chatCorrespondence,
-        };
-      }
-      return { statusCode: 200, chatData };
-    });
-  } catch (error: any) {
-    console.log(error, "errrrr");
-    return { statusCode: 501, chatData: null };
+  if  (auth.currentUser){
+    try {
+      const chatt = doc(db, "Chat", chatId);
+      onSnapshot(chatt, (querySnapshot) => {
+        if (querySnapshot) {
+          chatData = {
+            chatId: chatId,
+            donorId: querySnapshot.data()?.donorId,
+            itemName: querySnapshot.data()?.itemName,
+            recipientId: querySnapshot.data()?.recipientId,
+            chatCorrespondence: querySnapshot.data()?.chatCorrespondence,
+          };
+        }
+        return { statusCode: 200, chatData };
+      });
+    } catch (error: any) {
+      console.log(error, "errrrr");
+      return { statusCode: 501, chatData: null };
+    }
   }
 };
 
@@ -854,5 +927,42 @@ export const handleRemoveExpoToken = async (userId: string): Promise<{ statusCod
   } catch (error: any) {
 
     return { statusCode: 500, message:"Oops! an error occured" };
+  }
+};
+
+
+// Get user Data for Profile screen(Protected route)
+export const handleUserData = async (
+  userId: string
+): Promise<{ statusCode: number; userData: userDataProps } | any> => {
+  let userData: userDataProps;
+  try {
+    const userDataRef = doc(db, "Users", userId);
+
+    const querySnapshot = await getDoc(userDataRef);
+
+    if (querySnapshot.exists()) {
+      userData = {
+        id: userId,
+        firstname: querySnapshot.data().firstname,
+        lastname: querySnapshot.data().lastname,
+        phone: querySnapshot.data().phone,
+        email: querySnapshot.data().email,
+        isVerified: querySnapshot.data().emailVerified,
+        isActive: querySnapshot.data().isActive,
+        donated: querySnapshot.data().donated,
+        recieved: querySnapshot.data().recieved,
+        expoPushToken: querySnapshot?.data()?.expoPushToken || "",
+      };
+      return { statusCode: 200, userData };
+    } else {
+      console.log("No such document!");
+      return { statusCode: 200, userData: { error: "No such User exist!" } };
+    }
+  } catch (error: any) {
+    return {
+      statusCode: 501,
+      singleItem: { error: "Oops! an error occurred" },
+    };
   }
 };
