@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import Card from "../../components/Settings/Card";
 import IndicatorLoader from "../../components/IndicatorLoader";
 import { wait } from "../utils";
+import { isLoaded } from "expo-font";
 
 const title = "Profile";
 
@@ -76,7 +77,7 @@ function SettingsScreenView() {
     handleDeleteAccount(userData?.id as string).then((res) => {
       if (res === 501) {
         setErr(
-          "Are you sure, you want to delete your account? Please signout and login again before you can delete your account"
+          "Please signout and login again before you can delete your account"
         );
       } else if (res === 200) {
         console.log("done");
@@ -195,7 +196,11 @@ function SettingsScreenView() {
 
         {deletePrompt ? 
         <>
-          <Text style={styles.err}>Are you sure you want to close your account?</Text>
+          {loading ? 
+          <IndicatorLoader />
+          :
+          <>
+          <Text style={styles.err}>{err !== "" ? err : "Are you sure you want to close your account?"}</Text>
           <View style={styles.rowFlex}>
           <TouchableOpacity onPress={DeleteAccount}>
             <Text style={[
@@ -210,6 +215,8 @@ function SettingsScreenView() {
               ]}>No</Text>
             </TouchableOpacity>
           </View>
+          </>
+          }
         </>
       :
         <TouchableOpacity
