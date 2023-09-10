@@ -44,7 +44,7 @@ const SigninForm = ({
   
     try {
       const res: any  = await handleSignInAuth(values)
-
+      console.log(res, 'sdsdsds')
       // const res: any = await Promise.race([timeoutPromise, signInPromise]);
       setLoading(false);
       if (res?.statusCode === 200 && res?.userData?.isVerified) {
@@ -82,7 +82,8 @@ const SigninForm = ({
     <View style={styles.container}>
       
       <Formik
-        initialValues={{ password: "daniel12345", email: "todak2000@gmail.com" }}
+        // initialValues={{ password: "daniel12345", email: "todak2000@gmail.com" }}
+        initialValues={{ password: "", email: "" }}
         validationSchema={SigninSchema}
         onSubmit={handleSubmit}
       >

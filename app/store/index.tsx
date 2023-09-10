@@ -175,14 +175,18 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
   const getUserData = () => {
     
-    if (auth.currentUser) {
-      const userDataRef = doc(db, "Users", userData.id);
-      onSnapshot(userDataRef, (querySnapshot) => {
-        if (querySnapshot) {
-          const updatedUser: any = { id: userData.id, ...querySnapshot.data() }
-          setUserData(updatedUser);
-        }
-      });
+    try {
+      if (auth.currentUser && userData.id) {
+        const userDataRef = doc(db, "Users", userData.id);
+        onSnapshot(userDataRef, (querySnapshot) => {
+          if (querySnapshot) {
+            const updatedUser: any = { id: userData.id, ...querySnapshot.data() }
+            setUserData(updatedUser);
+          }
+        });
+      }
+    } catch (error) {
+      console.log(error, 'get data error')
     }
   }
   
@@ -218,20 +222,25 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   useEffect(() => {
-    const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
-      auth,
-      (user: any) => {
-        if (user && user.emailVerified) {
-          getUserData();
-          setIsRegistered(true);
-        } else {
-          // User is signed out
-          setUserData({});
-          setIsRegistered(false);
+    try {
+      const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
+        auth,
+        (user: any) => {
+          if (user && user.emailVerified) {
+            getUserData();
+            setIsRegistered(true);
+          } else {
+            // User is signed out
+            setUserData({});
+            setIsRegistered(false);
+          }
         }
-      }
-    );
-    return unsubscribeFromAuthStatuChanged;
+      );
+      return unsubscribeFromAuthStatuChanged;
+    } catch (error) {
+      console.log(error, 'errorr')
+    }
+    
   });
 
   const getLocation = async () => {

@@ -22,10 +22,10 @@ const ResetForm = ({
 
   useEffect(() => {
     if (!isRegistered) {
-      setScreen(1);
+      setScreen(3);
     } 
   });
-
+console.log("reset scren")
   const handleSubmit = (
     values: FormValues,
     actions: FormikHelpers<FormValues>
