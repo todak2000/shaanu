@@ -7,7 +7,6 @@ import {
 } from "react-native";
 import { Naira } from "../components/Naira";
 import { Text, View } from "../components/Themed";
-import { useLocalSearchParams } from "expo-router";
 import { useStore } from "./store";
 import { primaryRed, primaryYellow } from "../constants/Colors";
 import { ImageGrid } from "../components/Item/ImageGrid";
@@ -17,8 +16,8 @@ import {
   Ionicons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { sendExpoNotification } from "./utils";
-import { useRouter, router } from "expo-router";
+import { sendExpoNotification, maskString } from "./utils";
+import { useRouter, router, useLocalSearchParams } from "expo-router";
 import Button from "../components/Button";
 import InterestedPersonsList from "../components/Item/InterestedPersonsList";
 import { ScrollView } from "react-native-gesture-handler";
@@ -30,11 +29,11 @@ import {
   getExpoToken,
 } from "./db/apis";
 import { GridItem } from "../components/Home/GridList";
-import { maskString } from "./utils";
 
 const screenHeight = Dimensions.get("window").height;
 
 export default function DonationItemView() {
+
   const { id } = useLocalSearchParams();
   const { allData, getAllItemDataStore } = useStore();
 
@@ -54,7 +53,7 @@ export default function DonationItemView() {
 
   const intiateChat = (recipientId: string) => {
     if (recipientId === "") {
-      Alert.alert("Sorry, you cannot initate this chat");
+      Alert.alert("Apologies, but you are unable to initiate this chat at the moment.");
     } else {
       router.replace({
         pathname: "/chat",
@@ -296,7 +295,7 @@ export default function DonationItemView() {
                 />
                 <Text style={styles.disbaledText}>{item?.status}</Text>
               </View>
-              {item?.location &&
+              {item?.location !== "Searching..." &&
               <View
                 style={[
                   styles.disabled,

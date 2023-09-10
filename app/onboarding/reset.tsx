@@ -36,10 +36,10 @@ const ResetForm = ({
     actions.setSubmitting(false);
     handlePasswordReset(values).then((res) => {
       if (res === 200) {
-        Alert.alert("Password reset link has been sent to your email");
+        Alert.alert("A password reset link has been sent to your email.");
       } else if (res === 404) {
         Alert.alert(
-          "Oops! The email does not exist in our databse. Please Signup"
+          "We’re sorry, but the email you entered does not exist in our database. Please consider signing up to create an account."
         );
       } else {
         Alert.alert("Oops! an error occurred");

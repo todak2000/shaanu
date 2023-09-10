@@ -40,8 +40,9 @@ function CatalogScreenView() {
 
   return (
     <>
-      <Text style={styles.title}>{title}</Text>
+      
       <View style={styles.container}>
+      <Text style={styles.title}>{title}</Text>
         <View style={styles.tabContainer}>
           {tabArr.map(
             ({
@@ -95,6 +96,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    padding: "5%",
   },
   tabContainer: {
     flexDirection: "row",

@@ -31,7 +31,6 @@ const SignupForm = ({
     userData,
     registerForPushNotificationsAsync,
     setExpoPushToken,
-    updateUser
   } = useStore();
 
   useEffect(() => {
@@ -47,40 +46,43 @@ const SignupForm = ({
   ) => {
     setLoading(true);
     actions.setSubmitting(false);
-    // handleSignUpAuth(values).then((res) => {
-    //   Alert.alert("Welcome! kindly check your email to verify your account");
-    //   if (res?.statusCode === 200) {
-    //     setUserData(res?.userData);
-    //   } else if (res?.statusCode === 409) {
-    //     Alert.alert(
-    //       "Oops! The email already exist in our databse. Please Signin"
-    //     );
-    //   } else {
-    //     Alert.alert("Oops! an error occurred");
-    //   }
-     
-    //   setLoading(false);
-    //   updateUser();
-    // });
+    
     const token = await registerForPushNotificationsAsync();
     console.log(token, 'token')
-    if (token) {
-      setExpoPushToken(token as string);
-      values.expoPushToken = token;
-      handleSignUpAuth(values).then((res) => {
-        Alert.alert("Welcome! kindly check your email to verify your account");
-        if (res?.statusCode === 200) {
-          setUserData(res?.userData);
-        } else if (res?.statusCode === 409) {
-          Alert.alert(
-            "Oops! The email already exist in our databse. Please Signin"
-          );
-        } else {
-          Alert.alert("Oops! an error occurred");
-        }
-        setLoading(false);
-      });
-    }
+
+    setExpoPushToken(token as string);
+    values.expoPushToken = token;
+    handleSignUpAuth(values).then((res) => {
+      Alert.alert("Welcome! Please check your email to verify your account. Thank you.");
+      if (res?.statusCode === 200) {
+        setUserData(res?.userData);
+      } else if (res?.statusCode === 409) {
+        Alert.alert(
+          "We're sorry, but the email you entered already exists in our database. Please consider signing in to access your account."
+        );
+      } else {
+        Alert.alert("Oops! an error occurred");
+      }
+      setLoading(false);
+    });
+
+    // if (token) {
+    //   setExpoPushToken(token as string);
+    //   values.expoPushToken = token;
+    //   handleSignUpAuth(values).then((res) => {
+    //     Alert.alert("Welcome! kindly check your email to verify your account");
+    //     if (res?.statusCode === 200) {
+    //       setUserData(res?.userData);
+    //     } else if (res?.statusCode === 409) {
+    //       Alert.alert(
+    //         "Oops! The email already exist in our databse. Please Signin"
+    //       );
+    //     } else {
+    //       Alert.alert("Oops! an error occurred");
+    //     }
+    //     setLoading(false);
+    //   });
+    // }
   };
 
   return (

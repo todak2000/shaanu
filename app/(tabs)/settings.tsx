@@ -8,6 +8,7 @@ import { primaryRed, primaryYellow } from "../../constants/Colors";
 import {
   Ionicons,
   FontAwesome5,
+  MaterialCommunityIcons
 } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import Card from "../../components/Settings/Card";
@@ -17,15 +18,18 @@ import { wait } from "../utils";
 const title = "Profile";
 
 function SettingsScreenView() {
-  const { loading, theme, setLoading, curentLoc, userData, getLocation, updateUser } =
+  const { loading, theme, expoPushToken, setLoading, curentLoc, userData, getLocation, updateUser, deleteToken, setExpoPushToken  } =
     useStore();
   const [err, setErr] = useState("");
+  const [notification, setNotification] = useState<boolean>(false);
+  const [deletePrompt, setDeletePrompt] = useState<boolean>(false);
 
-  const SignOut = () => {
-    handleSignOut().then(() => {
-      setLoading(false);
-    });
-  };
+  useEffect(() => {
+    if (expoPushToken !== "") {
+      setNotification(true)
+    }
+  }, [expoPushToken])
+  
 
   useEffect(() => {
     wait(5000).then(() => {
@@ -38,6 +42,35 @@ function SettingsScreenView() {
     }
   }, [curentLoc]);
 
+  const SignOut = () => {
+    handleSignOut().then(() => {
+      setLoading(false);
+    });
+  };
+
+  const handleNotification = async (value: string)=>{
+    if (value === "activate") {
+      setNotification(true)
+      await updateUser().then((res: any)=>{
+        if (!res?.token && res.statusCode !== 200){
+          setNotification(false)
+          setExpoPushToken("")
+          
+        }
+      })
+    }
+    else{
+      setNotification(false)
+      await deleteToken().then((res: any)=>{
+        // console.log(res, 'res')
+        if (res !== 200){
+          setNotification(true)
+          setExpoPushToken(userData?.expoPushToken as string)
+        }
+      })
+    }
+  }
+  
   const DeleteAccount = () => {
     setLoading(true);
     handleDeleteAccount(userData?.id as string).then((res) => {
@@ -78,8 +111,9 @@ function SettingsScreenView() {
 
   return (
     <>
-      <Text style={styles.title}>{title}</Text>
+      
       <View style={styles.container}>
+      <Text style={styles.title}>{title}</Text>
         <View style={styles.header}>
           <Text
             style={[
@@ -117,25 +151,39 @@ function SettingsScreenView() {
               <Ionicons
                 name="moon"
                 size={24}
-                color={theme === "dark" ? "#ccc" : primaryYellow}
+                color={theme === "dark" ? "#ccc" : "#232323"}
               />
               <Text style={styles.text}>{theme === "dark" ? "Dark Mode" : "Light Mode"}</Text>
             </View>
-            {/* {theme === "dark" ? (
+            
+            
+            
+          </View>
+          <View style={styles.row}>
+          <View style={styles.rowInner}>
+            <Ionicons
+              name="ios-notifications-circle"
+              size={24}
+              color={theme === "dark" ? "#ccc" : "#232323"}
+            />
+            <Text style={styles.text}>Notification Settings</Text>
+          </View>
+          { notification ? 
               <MaterialCommunityIcons
                 name="toggle-switch"
+                onPress={()=>handleNotification("deactivate")}
                 size={70}
                 color={theme === "dark" ? primaryYellow : primaryRed}
               />
-            ) : (
+              :
               <MaterialCommunityIcons
                 name="toggle-switch-off"
+                onPress={()=>handleNotification("activate")}
                 size={70}
                 color={theme !== "dark" ? "#ccc" : "#ccc"}
               />
-            )} */}
+            }
           </View>
-
         </View>
         <Button
           onPress={SignOut}
@@ -145,14 +193,30 @@ function SettingsScreenView() {
           theme={theme}
         />
 
+        {deletePrompt ? 
+        <>
+          <Text style={styles.err}>Are you sure you want to close your account?</Text>
+          <View style={styles.rowFlex}>
+          <TouchableOpacity onPress={DeleteAccount}>
+            <Text style={[
+                styles.deleteText,
+                { color: primaryRed },
+              ]}>Yes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={()=>setDeletePrompt(false)}>
+            <Text style={[
+                styles.deleteText,
+                { color: "#4ED884", fontFamily:"MuseoBold" },
+              ]}>No</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      :
         <TouchableOpacity
-          onPress={loading ? () => null : DeleteAccount}
+          onPress={()=>setDeletePrompt(true)}
           style={styles.delete}
         >
-          {loading ? (
-            <IndicatorLoader />
-          ) : (
-            <Text
+          <Text
               style={[
                 styles.deleteText,
                 { color: theme === "dark" ? "#ffffff50" : primaryRed },
@@ -160,9 +224,9 @@ function SettingsScreenView() {
             >
               Delete Account
             </Text>
-          )}
         </TouchableOpacity>
-        {err !== "" && <Text style={styles.err}>{err}</Text>}
+        }
+        {/* {err !== "" && <Text style={styles.err}>{err}</Text>} */}
       </View>
     </>
   );
@@ -183,6 +247,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: primaryRed,
     marginTop: 20,
+    marginBottom: 20,
   },
   rowFlex: {
     flexDirection: "row",

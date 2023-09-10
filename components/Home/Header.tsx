@@ -34,7 +34,7 @@ const Header: React.FC = () => {
             { color: theme === "dark" ? "#ccc" : "black" },
           ]}
         >
-          Hi {userData?.firstname}!
+          Hi {userData?.firstname ? userData.firstname :"There"}!
         </Text>
       </View>
     </View>

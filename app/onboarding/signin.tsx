@@ -18,7 +18,7 @@ const SigninForm = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { loading, setLoading, setUserData, userData, theme, updateUser } = useStore();
+  const { loading, setLoading, setUserData, userData, theme  } = useStore();
 
   useEffect(() => {
     if (userData?.id) {
@@ -38,19 +38,18 @@ const SigninForm = ({
         setUserData(res?.userData);
       } else if (res?.statusCode === 200 && !res?.userData?.isVerified) {
         Alert.alert(
-          "Oops! Kindly visit your email to verify your account"
+          "Please check your email to verify your account. Thank you."
         );
       }else if (res?.statusCode === 404) {
         Alert.alert(
-          "Oops! The email does not exist in our databse. Please Signup"
+          "We're sorry, but the email you entered does not exist in our database. Please consider signing up to create an account."
         );
       } else if (res?.statusCode === 401) {
-        Alert.alert("Oops! You entered an wrong password");
+        Alert.alert("Apologies, but the password you entered is incorrect. Please try again.");
       } else {
         Alert.alert("Oops! an error occurred");
       }
       setLoading(false);
-      updateUser();
     });
   };
 

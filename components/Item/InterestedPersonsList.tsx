@@ -3,7 +3,7 @@ import { View, Pressable, StyleSheet, Alert } from "react-native";
 import { Text } from "../Themed";
 import { EvilIcons, MaterialIcons } from "@expo/vector-icons";
 import { useStore } from "../../app/store";
-import { maskString } from "../../app/utils";
+import { maskString, sendExpoNotification } from "../../app/utils";
 import { primaryRed, primaryYellow } from "../../constants/Colors";
 import {
   handleInterest,
@@ -11,7 +11,7 @@ import {
   getExpoToken,
 } from "../../app/db/apis";
 import IndicatorLoader from "../IndicatorLoader";
-import { sendExpoNotification } from "../../app/utils";
+
 interface interestPersonsProps {
   dataa: string[];
   status: string;
@@ -116,7 +116,7 @@ const InterestedPersonsList = ({
   const removeReciever = (recipientId: string) => {
     setClickedItem(recipientId);
     if (recipientId === "") {
-      Alert.alert("Sorry, you cannot initate this chat");
+      Alert.alert("I’m sorry, but it seems that you are unable to initiate this chat. ");
     } else {
       setIsLoading(true);
       const data = {

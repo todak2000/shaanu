@@ -4,18 +4,10 @@ import { Text, View } from "../../components/Themed";
 import { useStore } from "../store";
 import Header from "../../components/Home/Header";
 import SearchBar from "../../components/Home/Search";
-import {
-  ItemPropsWithID,
-  Item2Props,
-  handleDonationList,
-  getExpoToken,
-} from "../db/apis";
+import { ItemPropsWithID, Item2Props, handleDonationList } from "../db/apis";
 import Loader from "../../components/Loader";
-import Categories from "../../components/Home/Category";
-import GridList from "../../components/Home/GridList";
-import { categoryProps } from "../../components/Home/Category";
-import { GridItem } from "../../components/Home/GridList";
-import { sendExpoNotification } from "../utils";
+import Categories, { categoryProps }  from "../../components/Home/Category";
+import GridList, { GridItem } from "../../components/Home/GridList";
 import * as Crypto from "expo-crypto";
 import {
   MaterialCommunityIcons,
@@ -36,9 +28,8 @@ function HomeScreen() {
     fetchData,
     lastDoc,
     setLastDoc,
-    userData,
-    expoPushToken,
   } = useStore();
+
   const [searchArr, setSearchArr] = useState<
     ItemPropsWithID[] | Item2Props[] | null
   >(null);
@@ -61,18 +52,6 @@ function HomeScreen() {
     handleDonationList().then((result: any) => {
       setBackUpArr(result?.resultArray);
     });
-
-    // getExpoToken(userData?.id as string).then(result => {
-    //   console.log(result)
-    //   const title = `Test Header! 📫`;
-    //   const message = `Test Body. Thank you for your generosity.`
-    //   if (result.statusCode === 200) {
-    //     const token = result?.token
-    //     sendExpoNotification(token as string, title, message)
-    //     .then(result => console.log(result, "successful"))
-    //     .catch(error => console.error(error, "error"));
-    //   }
-    // });
   }, []);
 
   useEffect(() => {

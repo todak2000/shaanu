@@ -7,9 +7,10 @@ import {
   Image,
   ScrollView,
   SafeAreaView,
+  Pressable
 } from "react-native";
 import Button from "../../components/Button";
-import { Text } from "../../components/Themed";
+import { Text, TouchableOpacity } from "../../components/Themed";
 import { Formik, Field, FormikHelpers } from "formik";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
@@ -18,8 +19,6 @@ import { primaryYellow, primaryRed } from "../../constants/Colors";
 import CustomTextInput from "../../components/TextInput";
 import { categoryArr } from "../../constants/items";
 import { AntDesign } from "@expo/vector-icons";
-import { Pressable } from "react-native";
-import { TouchableOpacity } from "../../components/Themed";
 import { ItemProps, handleDonate, imageProps } from "../db/apis";
 import { DonateSchema } from "../utils/yup";
 import * as ImageManipulator from "expo-image-manipulator";

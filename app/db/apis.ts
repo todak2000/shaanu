@@ -385,7 +385,7 @@ export const handleDonate = async (
       ).then(() => {
         console.log("new item added");
       });
-      return { statusCode: 200, message: "Item added successfully!" };
+      return { statusCode: 200, message: "The item has been successfully added." };
     } else {
       console.log(res, "erorr");
     }
@@ -499,7 +499,7 @@ export const handleRemoveReciever = async (data: {
     );
     handleDestroyChat(data.id).then(() => console.log("recipeint removed"));
 
-    return { statusCode: 200, message: "Recipient removed successfully" };
+    return { statusCode: 200, message: "The recipient has been successfully removed." };
   } catch (error: any) {
     return { statusCode: 501, message: "Oops! an error occurred" };
   }
@@ -536,7 +536,7 @@ export const handleInterest = async (data: {
         (res) => res?.statusCode === 200 && console.log("chat initialted")
       );
     });
-    return { statusCode: 200, message: "Donation item updated successfully" };
+    return { statusCode: 200, message: "The donation item has been successfully updated." };
   } catch (error: any) {
     return { statusCode: 501, message: "Oops! an error occurred" };
   }
@@ -560,7 +560,7 @@ export const handlePotentialInterest = async (data: {
       );
       return {
         statusCode: 200,
-        message: "Congrats! your interest is well noted.",
+        message: "Congratulations! We have duly noted your interest.",
       };
     } else {
       return {
@@ -590,7 +590,7 @@ export const handleRemoveInterest = async (data: {
     );
     return {
       statusCode: 200,
-      message: "Your withdrawal request has been approved!",
+      message: "Your request for withdrawal has been approved. Please let us know if you need further assistance.",
     };
   } catch (error: any) {
     return { statusCode: 501, message: "Oops! an error occurred" };
@@ -781,7 +781,7 @@ export const handleConfirmDelivery = async (data: {
     );
     return {
       statusCode: 200,
-      message: "Donation item updated successfully",
+      message: "The donation item has been successfully updated.",
     };
   } catch (error: any) {
     return { statusCode: 501, message: "Oops! an error occurred" };
@@ -830,6 +830,26 @@ export const handleAddExpoToken = async (
         { merge: true }
       );
       return { statusCode: 200, message: "Expo token successfully added!", token: data.token };
+    
+  } catch (error: any) {
+
+    return { statusCode: 500, message:"Oops! an error occured" };
+  }
+};
+
+// Update User - remove expo Token 
+export const handleRemoveExpoToken = async (userId: string): Promise<{ statusCode: number; message: string, token?: string } | undefined> => {
+  try {
+    const updateRef = doc(db, "Users", userId);
+
+      await setDoc(
+        updateRef,
+        {
+          expoPushToken: "",
+        },
+        { merge: true }
+      );
+      return { statusCode: 200, message: "Expo token successfully removed!", token: "" };
     
   } catch (error: any) {
 

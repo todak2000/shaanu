@@ -47,20 +47,13 @@ function TabBarIcon(props: { name: any; color: string }) {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { isRegistered, loading, theme, updateUser, userData } = useStore();
+  const { isRegistered, loading, theme } = useStore();
   if (!isRegistered && !loading) {
     return <OnboardingScreen />;
   } else if (!isRegistered && loading) {
     return <Loader />;
   }
 
-  // useEffect(() => {
-    
-    
-  // },[])
-  if (userData?.expoPushToken === "") {
-    updateUser()
-  }
 
   return (
     <Tabs
