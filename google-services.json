@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "247533864082",
+    "project_id": "shaanu-3872b",
+    "storage_bucket": "shaanu-3872b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:247533864082:android:94d4bc471884860ea0124b",
+        "android_client_info": {
+          "package_name": "com.todak2000.shaanu_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "247533864082-8fmg1fhr72cfnc12vp1d1hq250mqdptt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcVqNr8Haz3TjbFJez98pe1Dt3JIvsXTM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "247533864082-8fmg1fhr72cfnc12vp1d1hq250mqdptt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
