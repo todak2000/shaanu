@@ -121,6 +121,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    padding: "5%",
+    // padding: "5%",
   },
 });
