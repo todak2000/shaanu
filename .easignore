@@ -23,6 +23,8 @@ note.txt
 # custom files
 requirements.txt
 notification.py
+google-services.json
+shaanu-3872b-firebase-adminsdk-aoi44-83dea9fc44.json
 
 
 # debug
