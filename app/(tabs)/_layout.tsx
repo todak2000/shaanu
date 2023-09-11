@@ -10,6 +10,7 @@ import Colors, { primaryYellow } from "../../constants/Colors";
 import OnboardingScreen from "../onboarding";
 import { useStore } from "../store";
 import Loader from "../../components/Loader";
+import CustomAlert from "../../components/CustomAlert";
 
 function TabBarIcon(props: { name: any; color: string }) {
   switch (props.name) {
@@ -47,7 +48,7 @@ function TabBarIcon(props: { name: any; color: string }) {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { isRegistered, loading, theme } = useStore();
+  const { isRegistered, loading, theme, alertTitle, alertMessage, alertVisible, hideAlert } = useStore();
   if (!isRegistered && !loading) {
     return <OnboardingScreen />;
   } else if (!isRegistered && loading) {
@@ -56,6 +57,14 @@ export default function TabLayout() {
 
 
   return (
+    <>
+    <CustomAlert
+      title={alertTitle}
+      message={alertMessage}
+      visible={alertVisible}
+      onClose={hideAlert}
+    />
+    
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme === "light" ? "#232323" : primaryYellow,
@@ -115,5 +124,6 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </>
   );
 }
