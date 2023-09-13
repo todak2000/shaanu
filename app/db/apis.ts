@@ -129,12 +129,12 @@ export const handleDeleteAccount = async (userId: string): Promise<number> => {
 };
 
 // User Signout
-export const handleSignOut = async(): Promise<number> => {
+export const handleSignOut = ()=> async(dispatch: Dispatch<any>): Promise<number> => {
   let statusCode: number;
   try {
-    // dispatch({ type: LOGIN_LOADING, loading: true })
+    dispatch({ type: LOGIN_LOADING, loading: true })
     const logout = await signOut(auth);
-    // dispatch({ type: LOGIN_LOADING, loading: false })
+    dispatch({ type: LOGOUT_SUCCESS, loading: false })
     console.log(logout, "logout");
     statusCode = 200;
     // dispatch({ type: LOGOUT_SUCCESS })
@@ -721,8 +721,10 @@ export const handleRemoveInterest = (data: {
 // User Catalog List show both donated and recieved items (Protected route)
 export const handleCatalogList = (
   userId: string
-) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; catalogList: GridItem[] } | undefined> => {
-  let catalogList: GridItem[] = [];
+) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; catalogList: any } | undefined> => {
+  let catalogList: any = {};
+  let donorList: GridItem[] = [];
+  let recieverList: GridItem[] = [];
 
   try {
     dispatch({ type: INVENTORY_LOADING, loading: true })
@@ -738,9 +740,8 @@ export const handleCatalogList = (
     const querySnapshot: any = await getDocs(catalogQuery);
     dispatch({ type: INVENTORY_LOADING, loading: false })
     if (querySnapshot.docs.length > 0) {
-      querySnapshot.docs.map((doc: any) => {
-       
-        catalogList.push({
+      querySnapshot.docs.filter((doc: any) => doc.data()?.interestedParties?.includes(userId)).map((doc: any) =>{
+        recieverList.push({
           id: doc.id,
           category: doc.data().category,
           name: doc.data().name,
@@ -752,14 +753,47 @@ export const handleCatalogList = (
           location: doc.data().location,
           interestedParties: doc.data().interestedParties,
         });
-      });
+      })
+      querySnapshot.docs.filter((doc: any) => doc.data()?.donor === userId).map((doc: any) =>{
+        donorList.push({
+          id: doc.id,
+          category: doc.data().category,
+          name: doc.data().name,
+          imageUrl: doc.data().imageUrl,
+          pickupAddress: doc.data().pickupAddress,
+          donor: doc.data().donor,
+          status: doc.data().status,
+          reciever: doc.data().reciever,
+          location: doc.data().location,
+          interestedParties: doc.data().interestedParties,
+        });
+      })
+      // querySnapshot.docs.map((doc: any) => {
+       
+      //   catalogList.push({
+      //     id: doc.id,
+      //     category: doc.data().category,
+      //     name: doc.data().name,
+      //     imageUrl: doc.data().imageUrl,
+      //     pickupAddress: doc.data().pickupAddress,
+      //     donor: doc.data().donor,
+      //     status: doc.data().status,
+      //     reciever: doc.data().reciever,
+      //     location: doc.data().location,
+      //     interestedParties: doc.data().interestedParties,
+      //   });
+      // });
     }
-    
+    // console.log(recieverList, 'reciverlist -------------')
+    // console.log(donorList, 'donorlist -------------')
     dispatch({
       type: CATALOG_SUCCESS,
-      payload: catalogList
+      payload: {
+        donorList: donorList,
+        recieverList: recieverList
+      }
     })
-    return { statusCode: 200, catalogList };
+    return { statusCode: 200, catalogList: {donorList: donorList, recieverList: recieverList} };
   } catch (error: any) {
     console.log(error, "error");
     dispatch({ type: INVENTORY_FAILURE, loading: false })

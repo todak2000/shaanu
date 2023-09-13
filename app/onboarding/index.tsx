@@ -17,12 +17,13 @@ export default function OnboardingScreen() {
   const [title, setTitle] = useState<string>("Sign In");
   const [subTitle, setSubTitle] = useState<string>("Welcome Back!");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { isRegistered, alertVisible, alertTitle, alertMessage, hideAlert } = useStore();
+  const { authState, alertVisible, alertTitle, alertMessage, hideAlert } = useStore();
+
 
   useEffect(() => {
-    if (isRegistered) {
+    if (authState.isRegistered) {
       setScreen(0);
-    } else if (!isRegistered && screen === 6) {
+    } else if (!authState.isRegistered && screen === 6) {
       wait(100).then(() => {
         setScreen(1);
         setIsLoading(false);

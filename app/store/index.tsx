@@ -49,14 +49,20 @@ interface inventoryProps {
   error: any
   inventory: any[]
   oldInventory: any[]
-  catalog: any[]
+  catalog: {
+    recieverList: any[],
+    donorList: any[],
+  }
   singleItem: any
 }
 
 const inventoryInitialState: inventoryProps = {
   inventory: [],
   oldInventory: [],
-  catalog: [],
+  catalog: {
+    recieverList: [],
+    donorList: [],
+  },
   singleItem: {},
   loading: false,
   error: null,
@@ -86,6 +92,7 @@ export type StoreContextProps = {
   setRefreshing: React.Dispatch<React.SetStateAction<boolean>>;
   onRefresh: any;
   theme: any;
+  setTheme: React.Dispatch<React.SetStateAction<any>>;
   curentLoc: string;
   setCurrentLoc: React.Dispatch<React.SetStateAction<string>>;
   data: GridItem[];
@@ -133,7 +140,8 @@ export const StoreContext = createContext<StoreContextProps>({
   refreshing: false,
   setRefreshing: () => null,
   onRefresh: () => null,
-  theme: null,
+  theme: 'light',
+  setTheme: ()=> null,
   curentLoc: "",
   setCurrentLoc: () => null,
   data: [],
@@ -197,10 +205,10 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const [alertVisible, setAlertVisible] = useState<boolean>(false);
   const [alertTitle, setAlertTitle] = useState<string>("");
   const [alertMessage, setAlertMessage] = useState<string>("");
-
+  const [theme, setTheme] = useState<string>("light");
   
 
-  const theme = useColorScheme();
+  // const theme = useColorScheme();
 
   const showAlert = () => {
     setAlertVisible(true);
@@ -282,6 +290,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       category: ''
     }
     fetchInventoryData(data)(inventoryDispatch)
+    handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
   }, [])
 
   useEffect(() => {
@@ -296,7 +305,10 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         (user: any) => {
           if (user && user?.emailVerified) {
             getLocalItem('userData').then((item: any) => {
-              getUserData(item?.id)
+              // getUserData(item?.id)(authDispatch)
+            })
+            getLocalItem('theme').then((item: any) => {
+              setTheme(item)
             })
           } else  {
             saveLocalItem('userData', '').then(() => {})
@@ -523,6 +535,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       setAlertMessage,
       alertTitle, 
       setAlertTitle,
+      setTheme
     }),
     [
       authDispatch,
@@ -568,7 +581,8 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       alertMessage, 
       setAlertMessage,
       alertTitle, 
-      setAlertTitle
+      setAlertTitle,
+      setTheme
     ]
   );
 

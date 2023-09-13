@@ -21,14 +21,14 @@ const SigninForm = ({
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
   const router = useRouter()
-  const {authDispatch, authState, setExpoPushToken, loading, setLoading, setUserData, userData, theme, showAlert, setAlertMessage,setAlertTitle, isRegistered } = useStore();
+  const {authDispatch, authState, theme, showAlert, setAlertMessage,setAlertTitle } = useStore();
   useEffect(() => {
-    if (isRegistered) {
+    if (authState.isRegistered) {
       setScreen(0);
     }
 
   });
-  
+
   const handleSubmit = async (
     values: FormValues,
     actions: FormikHelpers<FormValues>
@@ -37,10 +37,9 @@ const SigninForm = ({
  
     try {
       const res: any  = await handleSignInAuth(values)(authDispatch)
-      console.log(authState.isRegistered,'sdsdsd')
+
       if (res?.statusCode === 200 && res?.userData?.isVerified) {
         router.push('/(tabs)')
-        // console.log(authState, 'authstate--------')
       } else if (res?.statusCode === 200 && !res?.userData?.isVerified) {
         setAlertMessage("Please check your email to verify your account. Thank you.")
         setAlertTitle("Verify your Account!")

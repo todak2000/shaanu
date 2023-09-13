@@ -11,10 +11,10 @@ const GeneralScreen = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { loading, theme, authState, userData,isRegistered  } = useStore();
+  const { loading, theme, authState  } = useStore();
 
   useEffect(() => {
-    if (!isRegistered) {
+    if (!authState.isRegistered) {
       setScreen(1);
     } 
   });

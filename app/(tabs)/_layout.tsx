@@ -3,7 +3,6 @@ import {
   FontAwesome,
   Ionicons,
 } from "@expo/vector-icons";
-import { useEffect } from "react";
 import { Link, Tabs } from "expo-router";
 import { Pressable, useColorScheme } from "react-native";
 import Colors, { primaryYellow } from "../../constants/Colors";
@@ -47,14 +46,12 @@ function TabBarIcon(props: { name: any; color: string }) {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const { authState, theme, alertTitle, alertMessage, alertVisible, hideAlert } = useStore();
   if (!authState.isRegistered && !authState.loading) {
     return <OnboardingScreen />;
   } else if (!authState.isRegistered && authState.loading) {
     return <Loader />;
   }
-// console.log(authState.isRegistered, authState.userData)
   return (
     <>
     <CustomAlert
@@ -66,6 +63,7 @@ export default function TabLayout() {
     
     <Tabs
       screenOptions={{
+        tabBarStyle: {backgroundColor: theme === 'light' ? '#fff' : 'transparent', borderColor: theme === 'light' ? '#fff' : 'transparent'},
         tabBarActiveTintColor: theme === "light" ? "#232323" : primaryYellow,
         tabBarLabelStyle:{ fontFamily:"MuseoRegular", marginBottom: 5, fontSize: 8}
       }}
@@ -83,7 +81,7 @@ export default function TabLayout() {
                   <FontAwesome
                     name="info-circle"
                     size={25}
-                    color={Colors[colorScheme ?? "light"].text}
+                    // color={theme === "light" ?  : ''}
                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
                   />
                 )}

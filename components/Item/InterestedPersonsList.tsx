@@ -67,10 +67,11 @@ const styles = StyleSheet.create({
   },
   pick: {
     fontFamily: "MuseoBold",
+    fontSize: 18
   },
   id: {
     fontFamily: "MuseoRegular",
-    fontSize: 12,
+    fontSize: 16,
   },
   textNormal: {
     fontFamily: "MuseoRegular",
@@ -206,7 +207,7 @@ const InterestedPersonsList = ({
             <View style={styles.itemSha}>
               <MaterialIcons
                 name="person-pin"
-                size={20}
+                size={30}
                 color={theme === "dark" ? "#ccc" : "#232323"}
               />
               <Text style={styles.id}>{maskString(item)}</Text>
@@ -232,7 +233,7 @@ const InterestedPersonsList = ({
                           styles.pick,
                           {
                             color: theme === "dark" ? primaryYellow : "#7CDBB9",
-                            marginRight: 30,
+                            marginRight: 50,
                           },
                         ]}
                       >
@@ -264,7 +265,7 @@ const InterestedPersonsList = ({
                           <View style={styles.confirmView}>
                             <MaterialIcons
                               name="beenhere"
-                              size={24}
+                              size={30}
                               color="#7CDBB9"
                               style={{ marginRight: 30 }}
                             />
@@ -277,7 +278,7 @@ const InterestedPersonsList = ({
                             >
                               <MaterialIcons
                                 name="cancel"
-                                size={24}
+                                size={30}
                                 color={theme === "dark" ? "#ccc" : primaryRed}
                               />
                             </Pressable>
@@ -299,7 +300,7 @@ const InterestedPersonsList = ({
                         </Text>
                         <EvilIcons
                           name="plus"
-                          size={20}
+                          size={30}
                           color={theme === "dark" ? primaryYellow : primaryRed}
                         />
                       </>

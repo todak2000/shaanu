@@ -2,7 +2,7 @@ import { StyleSheet, View } from "react-native";
 import { useStore } from "../store";
 import { Text, TouchableOpacity } from "../../components/Themed";
 import Button from "../../components/Button";
-import { handleSignOut, handleDeleteAccount } from "../db/apis";
+import { handleSignOut, handleDeleteAccount, getUserData } from "../db/apis";
 import Wrapper from "../../components/Wrapper";
 import { primaryRed, primaryYellow } from "../../constants/Colors";
 import {
@@ -15,17 +15,22 @@ import Card from "../../components/Settings/Card";
 import IndicatorLoader from "../../components/IndicatorLoader";
 import { wait } from "../utils";
 import { useRouter } from "expo-router";
+import { saveLocalItem } from "../utils/localStorage";
 
 const title = "Profile";
 
 function SettingsScreenView() {
   const router = useRouter()
-  const { authDispatch, authState, loading, theme, expoPushToken, setLoading, curentLoc, userData, getLocation, updateUser, deleteToken, setExpoPushToken, setIsRegistered, setAlertMessage, setAlertTitle, showAlert  } =
+  const { authDispatch, authState, setTheme, theme, setLoading, curentLoc, userData, getLocation, updateUser, deleteToken, setAlertMessage, setAlertTitle, showAlert  } =
     useStore();
   const [err, setErr] = useState("");
   const [notification, setNotification] = useState<boolean>(authState?.userData?.expoPushToken !== "" ? true : false);
   const [deletePrompt, setDeletePrompt] = useState<boolean>(false);
+  // const [localTheme, setLocalTheme] = useState(theme)
 
+  useEffect(() => {
+    getUserData(authState?.userData?.id as string)(authDispatch)
+  },[])
 
   useEffect(() => {
     wait(5000).then(() => {
@@ -38,10 +43,9 @@ function SettingsScreenView() {
     }
   }, [curentLoc]);
 
-  // console.log(authState.loading, 'token')
   const SignOut = () => {
     
-    handleSignOut().then(() => router.push('/onboarding'))
+    handleSignOut()(authDispatch).then(() => router.push('/onboarding')).catch((err) => {console.log(err)})
   };
 
   const handleNotification = async (value: string)=>{
@@ -55,6 +59,20 @@ function SettingsScreenView() {
     }
   }
   
+  const handleTheme = (theme: string) => {
+    setTheme(theme)
+    if (theme === 'dark') {  
+      
+      saveLocalItem('theme', "dark").then().catch(()=>{
+        setTheme('light')
+      })
+    }
+    else {
+      saveLocalItem('theme', "light").then().catch(()=>{
+        setTheme('dark')
+      })
+    }
+  }
   const DeleteAccount = () => {
     setLoading(true);
     handleDeleteAccount(userData?.id as string).then((res) => {
@@ -94,6 +112,7 @@ function SettingsScreenView() {
       value: authState?.userData?.recieved || 0,
     },
   ];
+
 
   return (
     <>
@@ -140,7 +159,21 @@ function SettingsScreenView() {
               />
               <Text style={styles.text}>{theme === "dark" ? "Dark Mode" : "Light Mode"}</Text>
             </View>
-            
+            { theme === "light" ? 
+              <MaterialCommunityIcons
+                name="toggle-switch"
+                onPress={()=>handleTheme('dark')}
+                size={70}
+                color={theme === "dark" ? primaryYellow : primaryRed}
+              />
+              :
+              <MaterialCommunityIcons
+                name="toggle-switch-off"
+                onPress={()=>handleTheme('light')}
+                size={70}
+                color={theme !== "dark" ? "#ccc" : "#ccc"}
+              />
+            }
             
             
           </View>
@@ -170,7 +203,7 @@ function SettingsScreenView() {
             }
           </View>
         </View>
-        {loading ? 
+        {authState?.loading ? 
         <IndicatorLoader />
         :
         <>{!deletePrompt &&
@@ -180,13 +213,13 @@ function SettingsScreenView() {
           icon={false}
           color={theme === "dark" ? primaryYellow : "black"}
           theme={theme}
-          isLoading={loading}
+          isLoading={authState?.loading}
         />
         }</>
         }
         {deletePrompt ? 
         <>
-          {loading ? 
+          {authState?.loading ? 
           <IndicatorLoader />
           :
           <>
@@ -277,8 +310,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: "5%",
-    // backgroundColor:"#f0f",
-
   },
   header: {},
   row: {
@@ -286,9 +317,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingTop: 8,
-    paddingBottom: 8,
-    // marginBottom:10,
-    // marginTop: 10,
+    paddingBottom: 8
   },
   rowInner: {
     flexDirection: "row",

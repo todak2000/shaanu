@@ -28,7 +28,8 @@ const AuthReducer = (state: any, action: AuthAction): any => {
     case UPDATE_NOTIFICATION_FAILURE:
       return {
         ...state,
-        isLogin: false
+        loading: action.loading,
+        isRegistered: false
       }
     case UPDATE_NOTIFICATION_SUCCESS:
       return {

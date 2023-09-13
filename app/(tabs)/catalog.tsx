@@ -6,7 +6,6 @@ import { useStore } from "../store";
 import ItemList from "../../components/Catalog/ItemList";
 import { primaryYellow } from "../../constants/Colors";
 import { handleCatalogList } from "../db/apis";
-import Loader from "../../components/Loader";
 
 const title = "Catalog";
 
@@ -20,38 +19,25 @@ function CatalogScreenView() {
   };
 
   useEffect(() => {
-    // console.log(change, 'chhhhx')
     handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
   }, [change])
 
   useEffect(() => {
     handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+    // setRequestData(inventoryState.catalog?.recieverList);
+    // setDonorData(inventoryState?.catalog?.donorList);
   }, [])
-  
-  // console.log("handle---", inventoryState.catalog)
-  const updateData = useCallback(() => {
-    // handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
-    setRequestData(
-      inventoryState.catalog?.filter((item) =>
-        item?.interestedParties?.includes(userData?.id as string)
-      )
-    );
-    setDonorData(inventoryState.catalog?.filter((item) => item?.donor === userData?.id));
-}, [inventoryState.catalog])
 
-useEffect(() => {
-    updateData()
-}, [updateData])
+//   const updateData = useCallback(() => {
+//     setRequestData(inventoryState.catalog?.recieverList);
+//     setDonorData(inventoryState?.catalog?.donorList);
+// }, [inventoryState.catalog])
 
-  // useEffect(() => {
-  //   setRequestData(
-  //     inventoryState.inventory?.filter((item) =>
-  //       item?.interestedParties?.includes(userData?.id as string)
-  //     )
-  //   );
-  //   setDonorData(inventoryState.inventory?.filter((item) => item?.donor === userData?.id));
-  // }, [inventoryState.inventory])
-  
+// useEffect(() => {
+//     updateData()
+// }, [updateData])
+
+
   const tabArr = [
     {
       id: 1,
@@ -102,7 +88,7 @@ useEffect(() => {
         </View>
 
         <View style={styles.contentContainer}>
-        <ItemList change={change} setChange={setChange} dataa={activeTab === "One" ? donorData : requestData} />
+        <ItemList change={change} setChange={setChange} dataa={activeTab === "One" ? inventoryState.catalog?.donorList : inventoryState.catalog?.recieverList} />
         </View>
       </View>
     </>
@@ -147,7 +133,6 @@ const styles = StyleSheet.create({
     fontFamily: "MuseoRegular",
   },
   contentContainer: {
-    flex: 1,
-    // padding: "5%",
+    flex: 1
   },
 });

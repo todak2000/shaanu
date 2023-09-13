@@ -24,7 +24,10 @@ const InventoryReducer = (state: any, action: any) => {
     case CATALOG_SUCCESS:
       return {
         ...state,
-        catalog: action.payload
+        catalog: {
+          recieverList: action.payload.recieverList,
+          donorList: action.payload.donorList,
+        }
       }
     case INVENTORY_FAILURE:
     case CATALOG_FAILURE:

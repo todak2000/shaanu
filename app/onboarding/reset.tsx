@@ -18,19 +18,18 @@ const ResetForm = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { authDispatch, authState, loading, theme, setLoading, userData, isRegistered, setAlertMessage, setAlertTitle, showAlert } = useStore();
+  const { authDispatch, authState, theme, setAlertMessage, setAlertTitle, showAlert } = useStore();
 
   useEffect(() => {
-    if (!isRegistered) {
+    if (!authState.isRegistered) {
       setScreen(3);
     } 
   });
-console.log("reset scren")
+
   const handleSubmit = (
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
-    // setLoading(true);
     setScreen(3);
     actions.setSubmitting(false);
     handlePasswordReset(values)(authDispatch).then((res) => {
@@ -47,8 +46,7 @@ console.log("reset scren")
         setAlertTitle("Unknown Error!")
         showAlert()
       }
-      // setLoading(false);
-    });
+    }).catch((error)=>console.log(error));
   };
 
   return (

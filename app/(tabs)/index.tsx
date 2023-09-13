@@ -1,5 +1,5 @@
 import { StyleSheet, Pressable } from "react-native";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Text, View } from "../../components/Themed";
 import { useStore } from "../store";
 import Header from "../../components/Home/Header";
@@ -25,25 +25,6 @@ function HomeScreen() {
     useState<categoryProps | null>(null);
   const [type, setType] = useState<number>(0);
   const [searchText, setSearchText] = useState<string>("");
-
-//   const fetchInventoryDataCallBack = useCallback(() => {
-//     const data: any = {
-//       oldData: inventoryState.inventory,
-//       category: ''
-//     }
-//     fetchInventoryData(data)(inventoryDispatch)
-// }, [])
-
-// useEffect(() => {
-//   fetchInventoryDataCallBack()
-// }, [fetchInventoryDataCallBack])
-
-  // useEffect(() => {
-  //   const data: any = {
-  //     oldData: inventoryState.oldInventory
-  //   }
-  //   fetchInventoryData(data)(inventoryDispatch)
-  // }, [])
  
   useEffect(() => {
     if (selectedCategory === null) {
@@ -72,7 +53,7 @@ function HomeScreen() {
         setSelectedCategory={setSelectedCategory}
       />
       {inventoryState?.loading ? (
-        <Loader />
+        null // <Loader />
       ) : (
         <View style={styles.lowerSection}>
           <Text style={styles.title}>

@@ -27,6 +27,7 @@ import {
   handleConfirmDelivery,
   getExpoToken,
   handleCatalogList,
+  getUserData,
 } from "./db/apis";
 import { GridItem } from "../components/Home/GridList";
 import Loader from "../components/Loader";
@@ -36,12 +37,14 @@ const screenHeight = Dimensions.get("window").height;
 export default function DonationItemView() {
 
   const { id } = useLocalSearchParams();
-  const { inventoryState, inventoryDispatch } = useStore();
+  const {  } = useStore();
 
   const {
     theme,
     loading,
     userData,
+    inventoryState, inventoryDispatch,
+    authDispatch,
     fetchInventoryDataCallBack,
     setData,
     setLoading,
@@ -86,6 +89,7 @@ export default function DonationItemView() {
     if (res?.statusCode === 200) {
         fetchInventoryDataCallBack()
         handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+        getUserData(authState?.userData?.id as string)(authDispatch)
         // setAlertMessage(res?.message as string)
         // setAlertTitle("Delievery Confirmation")
         // showAlert()
@@ -120,6 +124,7 @@ export default function DonationItemView() {
       const res = await handleRemoveInterest(data)(inventoryDispatch);
       if (res?.statusCode === 200) {
         handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+        getUserData(authState?.userData?.id as string)(authDispatch)
         getExpoToken(item?.donor as string).then((result) => {
           const title = `${
             (item?.interestedParties as string[])?.length > 1
@@ -139,6 +144,10 @@ export default function DonationItemView() {
           }
         });
       } else{
+        
+        setAlertMessage("Appologies, we could not withdraw your interest due to network issues. Please try again")
+        setAlertTitle("Failed Attempt")
+        showAlert()
         handleConfirmInterestLocal();
       }
     }
@@ -159,6 +168,7 @@ export default function DonationItemView() {
   };
 
   const handleConfirmInterestLocalReverse = () => {
+    
     setItem((prevItem: any) => ({
       ...prevItem,
       interestedParties: !prevItem.interestedParties.includes(
@@ -195,6 +205,7 @@ export default function DonationItemView() {
       
       if (res?.statusCode === 200) {
         handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+        getUserData(authState?.userData?.id as string)(authDispatch)
         getExpoToken(item?.donor as string).then((result) => {
           const title = `${
             (item?.interestedParties as string[])?.length > 1
@@ -214,7 +225,12 @@ export default function DonationItemView() {
           }
         });
       } 
-      else{handleConfirmInterestLocalReverse()}
+      else{
+        setAlertMessage("Appologies, we could not confirm your interest due to network issues. Please try again")
+        setAlertTitle("Failed Attempt")
+        showAlert()
+        handleConfirmInterestLocalReverse()
+      }
     } else {
       setAlertMessage("We regret to inform you that the interest quota has been exceeded. We apologize for any inconvenience this may have caused. Thank you for your understanding.")
         setAlertTitle("Unconfirmed Interest")
@@ -229,6 +245,7 @@ export default function DonationItemView() {
       setLocalLoading(false)
       if (res?.statusCode === 200) {
         handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+        getUserData(authState?.userData?.id as string)(authDispatch)
         setItem(res.singleItem);
         // setLoading(false);
       }
@@ -244,6 +261,7 @@ export default function DonationItemView() {
       // console.log(res, 'res')
       setLocalLoading(false)
       handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+      getUserData(authState?.userData?.id as string)(authDispatch)
       if (res?.statusCode === 200) {
         setItem(res.singleItem);
         // setLoading(false);
