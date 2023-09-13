@@ -14,8 +14,14 @@ import {
   arrayRemove,
   arrayUnion,
   serverTimestamp,
+  DocumentData,
+  limit,
+  startAfter,
 } from "@firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ITEM_DELIVERY_SUCCESS, CLEAR_SINGLE_ITEM, GET_SINGLE_ITEM_SUCCESS, GET_SINGLE_ITEM_FAILURE, CATALOG_SUCCESS, CATALOG_FAILURE, INVENTORY_RECIVER_REMOVE, INVENTORY_RECIVER_ADD, INVENTORY_UPDATE_ADD, INVENTORY_UPDATE_REMOVE, UPDATE_NOTIFICATION_LOADING, UPDATE_NOTIFICATION_SUCCESS, UPDATE_NOTIFICATION_FAILURE, USERDATA_FAILURE, USERDATA_LOADING, USERDATA_SUCCESS, SIGNUP_LOADING, SIGNUP_FAILURE, SIGNUP_SUCCESS, CHANGE_PASSWORD_FAILURE, CHANGE_PASSWORD_LOADING, LOGIN_FAILURE, LOGIN_LOADING, LOGIN_SUCCESS, LOGOUT_SUCCESS, INVENTORY_LOADING, INVENTORY_SUCCESS, INVENTORY_FAILURE} from "../store/constants";
+import { getLocalItem, saveLocalItem } from "../utils/localStorage";
+import { type Dispatch } from 'react'
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -123,24 +129,33 @@ export const handleDeleteAccount = async (userId: string): Promise<number> => {
 };
 
 // User Signout
-export const handleSignOut = async (): Promise<number> => {
+export const handleSignOut = async(): Promise<number> => {
   let statusCode: number;
   try {
+    // dispatch({ type: LOGIN_LOADING, loading: true })
     const logout = await signOut(auth);
+    // dispatch({ type: LOGIN_LOADING, loading: false })
     console.log(logout, "logout");
     statusCode = 200;
+    // dispatch({ type: LOGOUT_SUCCESS })
     return statusCode;
-  } catch (err) {
+  } catch (error: any) {
     statusCode = 501;
+    // dispatch({ type: LOGIN_LOADING, loading: false })
+    // dispatch({ type: LOGIN_FAILURE, error: error?.message })
     return statusCode;
   }
 };
 
  // User Signup
-export const handleSignUpAuth = async (
+ export const handleSignUpAuth = (
   data: any
-): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
+) => async (dispatch: Dispatch<any>): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
+// export const handleSignUpAuth = async (
+//   data: any
+// ): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
   try {
+    dispatch({ type: SIGNUP_LOADING, loading: true })
     const userCredentials = await createUserWithEmailAndPassword(
       auth,
       data.email.toLocaleLowerCase(),
@@ -178,9 +193,16 @@ export const handleSignUpAuth = async (
         { merge: true }
       )
       // .then(() => {
-        
+        dispatch({ type: SIGNUP_LOADING, loading: false })
       // }).catch(async()=> await deleteUser(auth.currentUser));
       await sendEmailVerification(auth.currentUser);
+      dispatch({
+        type: SIGNUP_SUCCESS,
+        payload: {
+          userData: userData,
+          isRegistered: false
+        }
+      })
       return { statusCode: 200, userData };
     }
   } catch (error: any) {
@@ -196,18 +218,48 @@ export const handleSignUpAuth = async (
         statusCode = 501;
         break;
     }
-
+    dispatch({ type: SIGNUP_LOADING, loading: false })
+    dispatch({ type: SIGNUP_FAILURE, error: error?.message })
     return { statusCode, userData: null };
   }
 };
 
+export  const getUserData = (id: string) => async(dispatch: Dispatch<any>)=> {
+    
+  try {
+    dispatch({ type: USERDATA_LOADING, loading: true })
+    if (auth.currentUser && id) {
+      dispatch({ type: USERDATA_LOADING, loading: false })
+      const userDataRef = doc(db, "Users", id);
+      onSnapshot(userDataRef, (querySnapshot) => {
+        if (querySnapshot) {
+          const updatedUser: any = { id: id, ...querySnapshot.data() }
+          dispatch({
+            type: USERDATA_SUCCESS,
+            payload: {
+              userData: updatedUser
+            }
+          })
+          const user = JSON.stringify(updatedUser)
+          saveLocalItem('userData', user).then(() => {})
+          // setUserData(updatedUser);
+        }
+      });
+    }
+  } catch (error: any) {
+    dispatch({ type: USERDATA_LOADING, loading: false })
+    dispatch({ type: USERDATA_FAILURE, error: error?.message })
+    console.log(error, 'get data error')
+  }
+}
 // User Sign in
-export const handleSignInAuth = async (
+export const handleSignInAuth = (
   data: any
-): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
+) => async (dispatch: Dispatch<any>): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
   let statusCode: number;
   let userData: userDataProps;
   try {
+    dispatch({ type: LOGIN_LOADING, loading: true })
     const userCredentials = await signInWithEmailAndPassword(
       auth,
       data.email.toLocaleLowerCase(),
@@ -222,6 +274,7 @@ export const handleSignInAuth = async (
     const querySnapshot = await getDocs(userQuery);
     
     if (querySnapshot.docs.length === 1) {
+      dispatch({ type: LOGIN_LOADING, loading: false })
       statusCode = 200;
       userData = {
         id: querySnapshot.docs[0].id,
@@ -235,10 +288,20 @@ export const handleSignInAuth = async (
         recieved: querySnapshot.docs[0].data().recieved,
         expoPushToken: querySnapshot?.docs[0]?.data()?.expoPushToken || "",
       };
-
+      dispatch({
+        type: LOGIN_SUCCESS,
+        payload: {
+          userData: userData,
+          isRegistered: true
+        }
+      })
+      const user = JSON.stringify(userData)
+      await saveLocalItem('userData', user)
       return { statusCode, userData };
     }
   } catch (error: any) {
+    dispatch({ type: LOGIN_LOADING, loading: false })
+    dispatch({ type: LOGIN_FAILURE, error: error?.message })
     switch (error.message) {
       case "Firebase: Error (auth/user-not-found).":
         return { statusCode: 404, userData: null };
@@ -251,15 +314,17 @@ export const handleSignInAuth = async (
 };
 
 // User reset Password
-export const handlePasswordReset = async ({
+export const handlePasswordReset = ({
   email,
 }: {
   email: string;
-}): Promise<number> => {
+}) => async (dispatch: Dispatch<any>): Promise<number> => {
   let statusCode: number;
   try {
+    dispatch({ type: CHANGE_PASSWORD_LOADING, loading: true })
     const reset = await sendPasswordResetEmail(auth, email);
     statusCode = 200;
+    dispatch({ type: CHANGE_PASSWORD_LOADING, loading: false })
     return statusCode;
   } catch (error: any) {
     switch (error.message) {
@@ -271,22 +336,24 @@ export const handlePasswordReset = async ({
         statusCode = 501;
         break;
     }
+    dispatch({ type: CHANGE_PASSWORD_LOADING, loading: false })
+    dispatch({ type: CHANGE_PASSWORD_FAILURE, error: error?.message })
     return statusCode;
   }
 };
 
 // User search items in Dashboard (Protected route)
-export const handleSearch = async (
-  queryItem: string
-): Promise<
+export const handleSearch = (queryItem: string)=> async (dispatch: Dispatch<any>): Promise<
   { statusCode: number; searchResultArray: ItemProps[] | null } | undefined
 > => {
+  dispatch({ type: INVENTORY_LOADING, loading: true })
   let statusCode: number;
   let searchResultArray: ItemPropsWithID[] = [];
   try {
     const boardDB = collection(db, "Inventory");
     const searchQuery = query(boardDB);
     const querySnapshot: any = await getDocs(searchQuery);
+    dispatch({ type: INVENTORY_LOADING, loading: false })
     if (querySnapshot.docs.length > 0) {
       querySnapshot.docs
         .filter((initDoc: any) =>
@@ -309,11 +376,19 @@ export const handleSearch = async (
             interestedParties: doc.data().interestedParties,
           });
         });
+      dispatch({
+        type: INVENTORY_SUCCESS,
+        payload: {
+          inventory: searchResultArray
+        }
+      })
     }
     statusCode = 200;
     return { statusCode, searchResultArray };
-  } catch (err) {
+  } catch (error: any) {
     statusCode = 501;
+    dispatch({ type: INVENTORY_LOADING, loading: false })
+    dispatch({ type: INVENTORY_FAILURE, error: error?.message })
     return { statusCode, searchResultArray };
   }
 };
@@ -448,15 +523,18 @@ const getImageUrl = async (
 };
 
 // Get single Donated Item Details (Protected route)
-export const handleSingleItem = async (
+export const handleSingleItem = (
   id: string
-): Promise<{ statusCode: number; singleItem: GridItem } | any> => {
+) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; singleItem: GridItem } | any> => {
   let singleItem: GridItem;
   try {
+    dispatch({ type: CLEAR_SINGLE_ITEM, loading: true })
+    
     const singleItemRef = doc(db, "Inventory", id);
 
     const querySnapshot = await getDoc(singleItemRef);
-
+    // dispatch({ type: CLEAR_SINGLE_ITEM, loading: false })
+    dispatch({ type: INVENTORY_LOADING, loading: false })
     if (querySnapshot.exists()) {
       singleItem = {
         id: id,
@@ -470,12 +548,17 @@ export const handleSingleItem = async (
         location: querySnapshot.data().location,
         interestedParties: querySnapshot.data().interestedParties,
       };
+      dispatch({
+        type: GET_SINGLE_ITEM_SUCCESS,
+        payload: singleItem
+      })
       return { statusCode: 200, singleItem };
     } else {
       console.log("No such document!");
       return { statusCode: 200, singleItem: { error: "No such Item exist!" } };
     }
   } catch (error: any) {
+    dispatch({ type: GET_SINGLE_ITEM_FAILURE, error: error?.message })
     return {
       statusCode: 501,
       singleItem: { error: "Oops! an error occurred" },
@@ -508,7 +591,7 @@ export const handleRemoveReciever = async (data: {
 };
 
 // Donor picked a recipent of his/her donated Item  and intiate chat (Protected route)
-export const handleInterest = async (data: {
+export const handleInterest = (data: {
   id: string;
   userId: string;
   giverId: string;
@@ -516,7 +599,7 @@ export const handleInterest = async (data: {
   itemName: string;
   pickupAddress: string;
   recipientId: string;
-}): Promise<{ statusCode: number; message: string } | undefined> => {
+})=> async(dispatch: Dispatch<any>): Promise<{ statusCode: number; message: string } | undefined> => {
   const chatData = {
     giverId: data.giverId,
     itemId: data.itemId,
@@ -538,21 +621,34 @@ export const handleInterest = async (data: {
         (res) => res?.statusCode === 200 && console.log("chat initialted")
       );
     });
+    dispatch({
+      type: INVENTORY_RECIVER_ADD,
+      payload: {
+        id: data.id,
+        reciever: data.userId
+      }
+    })
     return { statusCode: 200, message: "The donation item has been successfully updated." };
   } catch (error: any) {
+    dispatch({
+      type: INVENTORY_RECIVER_REMOVE,
+      payload: data.id
+    })
     return { statusCode: 501, message: "Oops! an error occurred" };
   }
 };
 
 // Recipient shows interest in a Donated item (Protected route)
-export const handlePotentialInterest = async (data: {
+export const handlePotentialInterest = (data: {
   id: string;
   userId: string;
-}): Promise<{ statusCode: number; message: string } | undefined> => {
+}) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; message: string } | undefined> => {
+  // dispatch({ type: INVENTORY_LOADING, loading: true })
   try {
     const interestRef = doc(db, "Inventory", data.id);
     console.log(data.userId, "error handle interest")
     const checkRef = await getDoc(interestRef);
+    dispatch({ type: INVENTORY_LOADING, loading: false })
     if (checkRef.data()?.interestedParties.length < 5) {
       const res = await setDoc(
         interestRef,
@@ -561,6 +657,14 @@ export const handlePotentialInterest = async (data: {
         },
         { merge: true }
       );
+      dispatch({
+        type: INVENTORY_UPDATE_ADD,
+        payload: {
+          id: data.id,
+          newParty: data.userId
+        }
+      })
+      // console.log(res, 'potential interens')
       return {
         statusCode: 200,
         message: "Congratulations! We have duly noted your interest.",
@@ -574,15 +678,18 @@ export const handlePotentialInterest = async (data: {
     }
   } catch (error: any) {
     
+    dispatch({ type: INVENTORY_FAILURE, loading: false })
+    dispatch({ type: INVENTORY_FAILURE, error: error?.message })
     return { statusCode: 501, message: "Oops! an error occurred" };
   }
 };
 
 // Recipient removes interest from an donated item (Protected route)
-export const handleRemoveInterest = async (data: {
+export const handleRemoveInterest = (data: {
   id: string;
   userId: string;
-}): Promise<{ statusCode: number; message: string } | undefined> => {
+}) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; message: string } | undefined> => {
+  // dispatch({ type: INVENTORY_LOADING, loading: true })
   try {
     const boardRef = doc(db, "Inventory", data.id);
     const res = await setDoc(
@@ -592,22 +699,33 @@ export const handleRemoveInterest = async (data: {
       },
       { merge: true }
     );
+    dispatch({ type: INVENTORY_LOADING, loading: false })
+    dispatch({
+      type: INVENTORY_UPDATE_REMOVE,
+      payload: {
+        id: data.id,
+        removeParty: data.userId
+      }
+    })
     return {
       statusCode: 200,
       message: "Your request for withdrawal has been approved. Please let us know if you need further assistance.",
     };
   } catch (error: any) {
+    dispatch({ type: INVENTORY_FAILURE, loading: false })
+    dispatch({ type: INVENTORY_FAILURE, error: error?.message })
     return { statusCode: 501, message: "Oops! an error occurred" };
   }
 };
 
 // User Catalog List show both donated and recieved items (Protected route)
-export const handleCatalogList = async (
+export const handleCatalogList = (
   userId: string
-): Promise<{ statusCode: number; catalogList: GridItem[] } | undefined> => {
+) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; catalogList: GridItem[] } | undefined> => {
   let catalogList: GridItem[] = [];
 
   try {
+    dispatch({ type: INVENTORY_LOADING, loading: true })
     const catalogRef = collection(db, "Inventory");
     const catalogQuery = query(
       catalogRef,
@@ -616,9 +734,12 @@ export const handleCatalogList = async (
         where("interestedParties", "array-contains-any", [userId])
       )
     );
+    // console.log(userId, 'dockcck')
     const querySnapshot: any = await getDocs(catalogQuery);
+    dispatch({ type: INVENTORY_LOADING, loading: false })
     if (querySnapshot.docs.length > 0) {
       querySnapshot.docs.map((doc: any) => {
+       
         catalogList.push({
           id: doc.id,
           category: doc.data().category,
@@ -633,9 +754,16 @@ export const handleCatalogList = async (
         });
       });
     }
+    
+    dispatch({
+      type: CATALOG_SUCCESS,
+      payload: catalogList
+    })
     return { statusCode: 200, catalogList };
   } catch (error: any) {
     console.log(error, "error");
+    dispatch({ type: INVENTORY_FAILURE, loading: false })
+    dispatch({ type: CATALOG_FAILURE, error: error?.message })
     return { statusCode: 501, catalogList };
   }
 };
@@ -754,12 +882,13 @@ export const handleUpdateChat = async (data: {
 };
 
 // Recipeint Confirm Delivery of Item
-export const handleConfirmDelivery = async (data: {
+export const handleConfirmDelivery = (data: {
   itemId: string;
   donorId: string;
   recieverId: string;
-}): Promise<{ statusCode: number; message: string } | undefined> => {
+}) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; message: string } | undefined> => {
   try {
+    dispatch({ type: INVENTORY_LOADING, loading: true })
     const boardRef = doc(db, "Inventory", data.itemId);
     const res = await setDoc(
       boardRef,
@@ -785,6 +914,14 @@ export const handleConfirmDelivery = async (data: {
       },
       { merge: true }
     );
+    
+    dispatch({
+      type: ITEM_DELIVERY_SUCCESS,
+      payload: {
+        id: data.itemId,
+        status: "Delivered"
+      }
+    })
     return {
       statusCode: 200,
       message: "The donation item has been successfully updated.",
@@ -822,9 +959,10 @@ export const getExpoToken = async (
 
 
 // Update User - add expo Token 
-export const handleAddExpoToken = async (
+export const handleAddExpoToken = (
   data: {userId: string, token: string}
-): Promise<{ statusCode: number; message: string, token?: string } | undefined> => {
+) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; message: string, token?: string } | undefined> => {
+  dispatch({ type: UPDATE_NOTIFICATION_LOADING, loading: false })
   try {
     const updateRef = doc(db, "Users", data.userId);
 
@@ -835,16 +973,24 @@ export const handleAddExpoToken = async (
         },
         { merge: true }
       );
+      dispatch({ type: UPDATE_NOTIFICATION_LOADING, loading: false })
+      dispatch({
+        type: UPDATE_NOTIFICATION_SUCCESS,
+        payload: data.token
+      })
       return { statusCode: 200, message: "Expo token successfully added!", token: data.token };
     
   } catch (error: any) {
-
+    console.log(error, "active");
+    dispatch({ type: UPDATE_NOTIFICATION_LOADING, loading: false })
+    dispatch({ type: UPDATE_NOTIFICATION_FAILURE, error: error?.message })
     return { statusCode: 500, message:"Oops! an error occured" };
   }
 };
 
 // Update User - remove expo Token 
-export const handleRemoveExpoToken = async (userId: string): Promise<{ statusCode: number; message: string, token?: string } | undefined> => {
+export const handleRemoveExpoToken = (userId: string) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; message: string, token?: string } | undefined> => {
+  dispatch({ type: UPDATE_NOTIFICATION_LOADING, loading: false })
   try {
     const updateRef = doc(db, "Users", userId);
 
@@ -855,47 +1001,121 @@ export const handleRemoveExpoToken = async (userId: string): Promise<{ statusCod
         },
         { merge: true }
       );
+      dispatch({ type: UPDATE_NOTIFICATION_LOADING, loading: false })
+      dispatch({
+        type: UPDATE_NOTIFICATION_SUCCESS,
+        payload: ""
+      })
       return { statusCode: 200, message: "Expo token successfully removed!", token: "" };
     
   } catch (error: any) {
-
+    dispatch({ type: UPDATE_NOTIFICATION_LOADING, loading: false })
+    dispatch({ type: UPDATE_NOTIFICATION_FAILURE, error: error?.message })
     return { statusCode: 500, message:"Oops! an error occured" };
   }
 };
 
 
-// Get user Data for Profile screen(Protected route)
-export const handleUserData = async (
-  userId: string
-): Promise<{ statusCode: number; userData: userDataProps } | any> => {
-  let userData: userDataProps;
+// // Get user Data for Profile screen(Protected route)
+// export const handleUserData = async (
+//   userId: string
+// ): Promise<{ statusCode: number; userData: userDataProps } | any> => {
+//   let userData: userDataProps;
+//   try {
+//     const userDataRef = doc(db, "Users", userId);
+
+//     const querySnapshot = await getDoc(userDataRef);
+
+//     if (querySnapshot.exists()) {
+//       userData = {
+//         id: userId,
+//         firstname: querySnapshot.data().firstname,
+//         lastname: querySnapshot.data().lastname,
+//         phone: querySnapshot.data().phone,
+//         email: querySnapshot.data().email,
+//         isVerified: querySnapshot.data().emailVerified,
+//         isActive: querySnapshot.data().isActive,
+//         donated: querySnapshot.data().donated,
+//         recieved: querySnapshot.data().recieved,
+//         expoPushToken: querySnapshot?.data()?.expoPushToken || "",
+//       };
+//       return { statusCode: 200, userData };
+//     } else {
+//       console.log("No such document!");
+//       return { statusCode: 200, userData: { error: "No such User exist!" } };
+//     }
+//   } catch (error: any) {
+//     return {
+//       statusCode: 501,
+//       singleItem: { error: "Oops! an error occurred" },
+//     };
+//   }
+// };
+
+type fetchInventoryProps = {
+  afterDoc?: DocumentData | null,
+  oldData?: any,
+  category?: string
+}
+
+export const fetchInventoryData = (data: fetchInventoryProps)=> async (dispatch: Dispatch<any>) => {
   try {
-    const userDataRef = doc(db, "Users", userId);
-
-    const querySnapshot = await getDoc(userDataRef);
-
-    if (querySnapshot.exists()) {
-      userData = {
-        id: userId,
-        firstname: querySnapshot.data().firstname,
-        lastname: querySnapshot.data().lastname,
-        phone: querySnapshot.data().phone,
-        email: querySnapshot.data().email,
-        isVerified: querySnapshot.data().emailVerified,
-        isActive: querySnapshot.data().isActive,
-        donated: querySnapshot.data().donated,
-        recieved: querySnapshot.data().recieved,
-        expoPushToken: querySnapshot?.data()?.expoPushToken || "",
-      };
-      return { statusCode: 200, userData };
+    dispatch({ type: INVENTORY_LOADING, loading: true })
+    let searchQuery;
+    const boardDB = collection(db, "Inventory");
+    if (data.afterDoc) {
+      const initQuery = query(
+        boardDB,
+        where("status", "==", "Available"),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
+      searchQuery = query(initQuery, startAfter(data.afterDoc));
     } else {
-      console.log("No such document!");
-      return { statusCode: 200, userData: { error: "No such User exist!" } };
+      searchQuery = query(
+        boardDB,
+        where("status", "==", "Available"),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
     }
+  
+    const snapshot = await getDocs(searchQuery);
+    dispatch({ type: INVENTORY_LOADING, loading: false })
+    
+    if (!snapshot.empty && (data.category === '' || typeof data.category === 'object' )) {
+      const uniqueIds = new Set(data?.oldData?.map((item: any) => item.id))
+      const newData = snapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() } as GridItem))
+          .filter((item) => !uniqueIds.has(item.id))
+          .filter((newItem) => newItem.interestedParties.length < 5);
+
+      dispatch({
+        type: INVENTORY_SUCCESS,
+        payload: {
+          inventory: newData,
+          oldInventory: snapshot.docs[snapshot.docs.length - 1]
+        }
+      })
+    }
+    //category filter
+    else if (!snapshot.empty  && data.category !== '') {
+      const newData = snapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() } as GridItem))
+          .filter((item) => item?.category === data?.category)
+          .filter((newItem) => newItem.interestedParties.length < 5);
+      dispatch({
+        type: INVENTORY_SUCCESS,
+        payload: {
+          inventory: newData
+        }
+      })
+    }
+
   } catch (error: any) {
-    return {
-      statusCode: 501,
-      singleItem: { error: "Oops! an error occurred" },
-    };
+    console.error(error);
+    dispatch({ type: INVENTORY_LOADING, loading: false })
+    dispatch({ type: INVENTORY_FAILURE, error: error?.message })
   }
+  // setLoading(false);
 };

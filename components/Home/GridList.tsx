@@ -32,9 +32,7 @@ export interface GridItem {
 interface GridListProps {
   data: GridItem[];
   lastDoc: DocumentData | null;
-  setData: React.Dispatch<React.SetStateAction<GridItem[]>>;
-  setLastDoc: React.Dispatch<React.SetStateAction<DocumentData | null>>;
-  fetchData: (data?: DocumentData) => void;
+  fetchData: (data: any) => void;
 }
 
 const styles = StyleSheet.create({
@@ -106,19 +104,19 @@ const wait = (timeout: number) => {
 const GridList = ({
   data,
   lastDoc,
-  setData,
-  setLastDoc,
   fetchData,
 }: GridListProps) => {
-  const { theme, userData, setLoading, curentLoc } = useStore();
+  const {inventoryState, inventoryDispatch, theme, userData, setLoading, curentLoc } = useStore();
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
   const onRefresh = () => {
+    const data = {
+      oldData: inventoryState.inventory,
+      category: '' 
+    }
     setRefreshing(true);
-    setData([]);
-    setLastDoc(null);
-    fetchData();
+    fetchData(data);
     wait(2000).then(() => setRefreshing(false));
   };
 
@@ -126,20 +124,27 @@ const GridList = ({
     onRefresh();
   }, []);
 
+  
   const loadMoreData = () => {
     if (!loadingMore && lastDoc) {
+      const data = {
+        afterDoc: lastDoc,
+        oldData: inventoryState.inventory ,
+        category:''
+      }
       setLoadingMore(true);
-      fetchData(lastDoc);
+      fetchData(data);
       wait(2000).then(() => setLoadingMore(false));
     }
   };
 
   const handleDetails = (item: any) => {
-    setLoading(true);
+    // console.log(item, 'tieieree');
+    // setLoading(true);
     router.push({
       pathname: "/item",
       params: {
-        id: item.id,
+        id: item?.id,
       },
     });
   };
@@ -163,7 +168,7 @@ const GridList = ({
           ]}
         >
           <View style={styles.imageContainer}>
-            {item.category === "Cash" ? (
+            {item?.category === "Cash" ? (
               <MaterialCommunityIcons
                 name="bank-outline"
                 style={{ padding: 20 }}
@@ -171,12 +176,12 @@ const GridList = ({
                 color={theme === "dark" ? "#f0f0f0" : "#ccc"}
               />
             ) : (
-              <Image source={{ uri: item.imageUrl[0] }} style={styles.image} />
+              <Image source={{ uri: item?.imageUrl[0] }} style={styles.image} />
             )}
           </View>
 
           <View style={styles.textContainer}>
-            {item.category === "Cash" ? (
+            {item?.category === "Cash" ? (
               <Text
                 style={[
                   styles.name,

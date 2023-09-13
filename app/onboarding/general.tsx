@@ -11,7 +11,7 @@ const GeneralScreen = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { loading, theme, userData,isRegistered  } = useStore();
+  const { loading, theme, authState, userData,isRegistered  } = useStore();
 
   useEffect(() => {
     if (!isRegistered) {
@@ -28,7 +28,7 @@ const GeneralScreen = ({
       <Text style={styles.title}>
         Welcome Back!{" "}
         <Text style={{ color: primaryYellow, fontFamily: "MuseoBold" }}>
-          {userData?.firstname}
+          {authState?.userData?.firstname}
         </Text>
       </Text>
       <Button

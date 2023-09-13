@@ -26,24 +26,27 @@ import {
   handleSingleItem,
   handleConfirmDelivery,
   getExpoToken,
+  handleCatalogList,
 } from "./db/apis";
 import { GridItem } from "../components/Home/GridList";
+import Loader from "../components/Loader";
 
 const screenHeight = Dimensions.get("window").height;
 
 export default function DonationItemView() {
 
   const { id } = useLocalSearchParams();
-  const { allData, getAllItemDataStore } = useStore();
+  const { inventoryState, inventoryDispatch } = useStore();
 
   const {
     theme,
     loading,
     userData,
-    fetchData,
+    fetchInventoryDataCallBack,
     setData,
     setLoading,
     setLastDoc,
+    authState,
     setAlertMessage,
     setAlertTitle,
     showAlert
@@ -51,8 +54,9 @@ export default function DonationItemView() {
   const navigation = useRouter();
 
   const [isInterested, setIsInterested] = useState<boolean>(false);
-  const [item, setItem] = useState<GridItem>();
-
+  const [item, setItem] = useState<GridItem | any>();
+  const [localLoading, setLocalLoading] = useState<boolean>(true)
+// 
   const intiateChat = (recipientId: string) => {
     if (recipientId === "") {
       setAlertMessage("Apologies, but you are unable to initiate this chat at the moment.")
@@ -71,22 +75,26 @@ export default function DonationItemView() {
   };
 
   const handleDelivery = async () => {
+    
     handleDeliveryLocal();
     const data = {
       itemId: id as string,
       donorId: item?.donor as string,
       recieverId: userData?.id as string,
     };
-    const res = await handleConfirmDelivery(data);
+    const res = await handleConfirmDelivery(data)(inventoryDispatch);
     if (res?.statusCode === 200) {
-        setAlertMessage(res?.message as string)
-        setAlertTitle("Delievery Confirmation")
-        showAlert()
-      setLoading(false);
-      setData([]);
-      setLastDoc(null);
-      fetchData();
-      getAllItemDataStore();
+        fetchInventoryDataCallBack()
+        handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+        // setAlertMessage(res?.message as string)
+        // setAlertTitle("Delievery Confirmation")
+        // showAlert()
+        
+      // setLoading(false);
+      // setData([]);
+      // setLastDoc(null);
+      // fetchData();
+      // getAllItemDataStore();
 
       getExpoToken(item?.donor as string).then((result) => {
         const title = `Donation Confirmed! 📫`;
@@ -104,25 +112,22 @@ export default function DonationItemView() {
   };
 
   const handleCancelInterest = async () => {
+
     handleConfirmInterestLocalReverse();
     const data = { id: id as string, userId: userData?.id as string };
 
-    if ((item?.interestedParties as string[]).length < 5) {
-      const res = await handleRemoveInterest(data);
+    if ((item?.interestedParties as string[])?.length < 5) {
+      const res = await handleRemoveInterest(data)(inventoryDispatch);
       if (res?.statusCode === 200) {
-        setLoading(false);
-        setData([]);
-        setLastDoc(null);
-        fetchData();
-        getAllItemDataStore();
+        handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
         getExpoToken(item?.donor as string).then((result) => {
           const title = `${
-            (item?.interestedParties as string[]).length > 1
+            (item?.interestedParties as string[])?.length > 1
               ? item?.interestedParties?.length + " Withdrawals"
               : 1 + " Withdrawal"
           } of Interest! 📫`;
           const message = `We regret to inform you that ${
-            (item?.interestedParties as string[]).length > 1
+            (item?.interestedParties as string[])?.length > 1
               ? item?.interestedParties?.length + " Persons"
               : 1 + " Person"
           } has withdrawn their interest in the item you donated. Thank you for your generosity and understanding.`;
@@ -133,6 +138,8 @@ export default function DonationItemView() {
               .catch((error) => console.error(error, "error"));
           }
         });
+      } else{
+        handleConfirmInterestLocal();
       }
     }
   };
@@ -176,25 +183,21 @@ export default function DonationItemView() {
     }));
     setIsInterested(false);
   };
-  // console.log(userData, 'user data item')
+
+
   const handleConfirmInterest = async () => {
     handleConfirmInterestLocal();
 
     const data = { id: id as string, userId: userData?.id as string };
 
-    if ((item?.interestedParties as string[]).length < 5) {
-      const res = await handlePotentialInterest(data);
-      // console.log(res,"itme ress")
+    if ((item?.interestedParties as string[])?.length < 5) {
+      const res = await handlePotentialInterest(data)(inventoryDispatch);
+      
       if (res?.statusCode === 200) {
-        setLoading(false);
-        setData([]);
-        setLastDoc(null);
-
-        fetchData();
-        getAllItemDataStore();
+        handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
         getExpoToken(item?.donor as string).then((result) => {
           const title = `${
-            (item?.interestedParties as string[]).length > 1
+            (item?.interestedParties as string[])?.length > 1
               ? item?.interestedParties?.length + " Interests"
               : 1 + " Interest"
           } in Your Donation! 📫`;
@@ -210,9 +213,8 @@ export default function DonationItemView() {
               .catch((error) => console.error(error, "error"));
           }
         });
-      } else {
-        handleConfirmInterestLocalReverse();
-      }
+      } 
+      else{handleConfirmInterestLocalReverse()}
     } else {
       setAlertMessage("We regret to inform you that the interest quota has been exceeded. We apologize for any inconvenience this may have caused. Thank you for your understanding.")
         setAlertTitle("Unconfirmed Interest")
@@ -221,24 +223,42 @@ export default function DonationItemView() {
   };
 
   const handleGetItem = async () => {
-    await handleSingleItem(id as string).then((res) => {
+    setLocalLoading(true)
+    setItem({})
+    await handleSingleItem(id as string)(inventoryDispatch).then((res) => {
+      setLocalLoading(false)
       if (res?.statusCode === 200) {
+        handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
         setItem(res.singleItem);
-        setLoading(false);
+        // setLoading(false);
       }
     });
   };
-  useEffect(() => {
-    getAllItemDataStore();
-    const item: any = allData.filter((x) => x.id === id);
-    setItem(item[0]);
-    setLoading(false);
-  }, []);
 
+  useEffect(() => {
+    setItem({})
+    // setTimeout(() => {
+    //   setLocalLoading(false)
+    // }, 1000);
+    handleSingleItem(id as string)(inventoryDispatch).then((res) => {
+      // console.log(res, 'res')
+      setLocalLoading(false)
+      handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+      if (res?.statusCode === 200) {
+        setItem(res.singleItem);
+        // setLoading(false);
+      }
+    });
+    
+   
+  }, []);
+// console.log(item, 'item')
   return (
     <SafeAreaView>
       <ScrollView>
         <View style={styles.container}>
+          {localLoading  ? <Loader /> :
+          <>
           <View style={styles.header}>
             <TouchableOpacity
               style={styles.back}
@@ -376,7 +396,7 @@ export default function DonationItemView() {
                             )}`}
                             icon={false}
                             color={theme === "dark" ? primaryYellow : "#000"}
-                            isLoading={loading}
+                            // isLoading={inventoryState?.loading}
                             theme={theme}
                           />
                         </>
@@ -431,7 +451,7 @@ export default function DonationItemView() {
                         title="Withdraw Interest"
                         icon={false}
                         color={theme === "dark" ? primaryRed : "gray"}
-                        isLoading={loading}
+                        // isLoading={inventoryState?.loading}
                         theme={theme}
                       />
 
@@ -449,7 +469,7 @@ export default function DonationItemView() {
                               color={
                                 theme === "dark" ? primaryYellow : "#7CDBB9"
                               }
-                              isLoading={loading}
+                              // isLoading={inventoryState?.loading}
                               theme={theme}
                             />
                             <View style={{ margin: 10 }}></View>
@@ -458,14 +478,14 @@ export default function DonationItemView() {
                               title={`Confirm Item is Recieved`}
                               icon={false}
                               color="#08B72F"
-                              isLoading={loading}
+                              // isLoading={inventoryState?.loading}
                               theme={theme}
                             />
                           </View>
                         )}
                     </>
                   ) : (
-                    !loading &&
+                    !inventoryState.loading &&
                     item?.status !== "Delivered" && (
                       <>
                         <Text
@@ -494,7 +514,7 @@ export default function DonationItemView() {
                           title="I am Interested"
                           icon={false}
                           color={theme === "dark" ? primaryYellow : "black"}
-                          isLoading={loading}
+                          // isLoading={inventoryState?.loading}
                           theme={theme}
                         />
                       </>
@@ -504,6 +524,8 @@ export default function DonationItemView() {
               )}
             </View>
           </>
+          </>
+          }
         </View>
       </ScrollView>
     </SafeAreaView>

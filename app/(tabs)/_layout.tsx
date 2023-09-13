@@ -48,14 +48,13 @@ function TabBarIcon(props: { name: any; color: string }) {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { isRegistered, loading, theme, alertTitle, alertMessage, alertVisible, hideAlert } = useStore();
-  if (!isRegistered && !loading) {
+  const { authState, theme, alertTitle, alertMessage, alertVisible, hideAlert } = useStore();
+  if (!authState.isRegistered && !authState.loading) {
     return <OnboardingScreen />;
-  } else if (!isRegistered && loading) {
+  } else if (!authState.isRegistered && authState.loading) {
     return <Loader />;
   }
-
-
+// console.log(authState.isRegistered, authState.userData)
   return (
     <>
     <CustomAlert

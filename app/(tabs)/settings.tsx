@@ -20,10 +20,10 @@ const title = "Profile";
 
 function SettingsScreenView() {
   const router = useRouter()
-  const { loading, theme, expoPushToken, setLoading, curentLoc, userData, getLocation, updateUser, deleteToken, setExpoPushToken, setIsRegistered, setAlertMessage, setAlertTitle, showAlert  } =
+  const { authDispatch, authState, loading, theme, expoPushToken, setLoading, curentLoc, userData, getLocation, updateUser, deleteToken, setExpoPushToken, setIsRegistered, setAlertMessage, setAlertTitle, showAlert  } =
     useStore();
   const [err, setErr] = useState("");
-  const [notification, setNotification] = useState<boolean>(expoPushToken !== "" ? true : false);
+  const [notification, setNotification] = useState<boolean>(authState?.userData?.expoPushToken !== "" ? true : false);
   const [deletePrompt, setDeletePrompt] = useState<boolean>(false);
 
 
@@ -38,36 +38,20 @@ function SettingsScreenView() {
     }
   }, [curentLoc]);
 
+  // console.log(authState.loading, 'token')
   const SignOut = () => {
     
-    setIsRegistered(false)
-    setLoading(true);
-    router.push('/onboarding');
-    setLoading(false);
-    handleSignOut().then(() => {
-      setLoading(false);
-    });
+    handleSignOut().then(() => router.push('/onboarding'))
   };
 
   const handleNotification = async (value: string)=>{
     if (value === "activate") {
       setNotification(true)
-      await updateUser().then((res: any)=>{
-        if (res.statusCode !== 200){
-          setNotification(false)
-          setExpoPushToken("")
-          
-        }
-      })
+      await updateUser().then((res: any)=>{}).catch((err:any)=>{console.log(err, 'errr')})
     }
     else{
       setNotification(false)
-      await deleteToken().then((res: any)=>{
-        if (res !== 200){
-          setNotification(true)
-          setExpoPushToken(userData?.expoPushToken as string)
-        }
-      })
+      await deleteToken().then((res: any)=>{}).catch((err:any)=>{console.log(err, 'errr')})
     }
   }
   
@@ -86,7 +70,7 @@ function SettingsScreenView() {
         showAlert()
       }
       setLoading(false);
-    });
+    }).catch((err:any)=>{console.log(err, 'errr')});
   };
   const cardArr = [
     {
@@ -99,7 +83,7 @@ function SettingsScreenView() {
           color="#7CDBB9"
         />
       ),
-      value: userData?.donated || 0,
+      value: authState?.userData?.donated || 0,
     },
     {
       id: 2,
@@ -107,7 +91,7 @@ function SettingsScreenView() {
       icon: (
         <Ionicons name="arrow-undo-outline" size={34} color={primaryYellow} />
       ),
-      value: userData?.recieved || 0,
+      value: authState?.userData?.recieved || 0,
     },
   ];
 

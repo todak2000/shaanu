@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Text, TouchableOpacity} from "react-native";
 import Button from "../../components/Button";
 import { Formik, FormikHelpers } from "formik";
@@ -34,9 +34,12 @@ const SignupForm = ({
     isRegistered,
     setAlertMessage,
     setAlertTitle,
-    showAlert
+    showAlert,
+    authState,
+    authDispatch
   } = useStore();
 
+  const [localLoading, setLocalLoading] = useState<boolean>(false)
   useEffect(() => {
     if (isRegistered) {
       setScreen(0);
@@ -57,37 +60,30 @@ const SignupForm = ({
     actions: FormikHelpers<FormValues>
   ) => {
     setScreen(2)
-    setLoading(true);
+    setLocalLoading(true);
     actions.setSubmitting(false);
   
-    
-
     try {
       const token  = await registerForPushNotificationsAsync()
-      console.log(token, 'token')
+      // console.log(token, 'token')
 
-      setExpoPushToken(token as string);
+      // setExpoPushToken(token as string);
       values.expoPushToken = token ? token : "";
   
-      const res: any = await handleSignUpAuth(values)
-
+      const res: any = await handleSignUpAuth(values)(authDispatch)
+      setLocalLoading(false);
       if (res?.statusCode === 200) {
         setAlertMessage("Welcome! Please check your email to verify your account. Thank you.")
         setAlertTitle("Yah! one more hurdle to cross")
         showAlert()
-        setLoading(false);
-        setUserData(res?.userData);
       } else if (res?.statusCode === 409) {
         setAlertMessage("We're sorry, but the email you entered already exists in our database. Please consider signing in to access your account.")
         setAlertTitle("You have an Account Already!")
         showAlert()
-        setLoading(false);
       } else {
-        console.log(res, "sdsdsdsdssds-----------")
         setAlertMessage("Oops! an error occurred.")
         setAlertTitle("Unknown Error!")
         showAlert()
-        setLoading(false);
       }
       
       
@@ -95,7 +91,7 @@ const SignupForm = ({
       setAlertMessage("Oops! an error occurred. Try again")
       setAlertTitle("Network Issues!")
       showAlert()
-      setLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -103,12 +99,18 @@ const SignupForm = ({
     <View style={styles.container}>
       <Formik
         initialValues={{
-          firstname: "",
-          lastname: "",
-          phoneNumber: "",
-          password: "",
-          email: "",
+          firstname: "Ola",
+          lastname: "Bade",
+          phoneNumber: "09876563512",
+          password: "dada12345",
+          email: "dada@dada.com",
           expoPushToken: "",
+          // firstname: "",
+          // lastname: "",
+          // phoneNumber: "",
+          // password: "",
+          // email: "",
+          // expoPushToken: "",
         }}
         validationSchema={SignupSchema}
         onSubmit={handleSubmit}
@@ -176,7 +178,7 @@ const SignupForm = ({
               title="Sign up"
               icon={false}
               color={theme === "dark" ? primaryYellow : "black"}
-              isLoading={loading}
+              isLoading={authState?.loading || localLoading}
               theme={theme}
             />
           </View>
@@ -184,7 +186,7 @@ const SignupForm = ({
       </Formik>
 
       <TouchableOpacity onPress={() => setScreen(1)}>
-        <Text style={styles.redirect}>
+      <Text style={[styles.redirect, {color: theme === 'dark' ? '#d0d0d0': '#232323',}]}>
           Already registered? <Text style={styles.yellow}>Sign in Here</Text>
         </Text>
       </TouchableOpacity>
@@ -210,7 +212,6 @@ const styles = StyleSheet.create({
   redirect: {
     marginTop: 20,
     textAlign: "center",
-    color: "#232323",
     fontFamily: "MuseoRegular",
   },
   yellow: {

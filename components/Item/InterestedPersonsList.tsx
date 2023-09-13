@@ -98,7 +98,7 @@ const InterestedPersonsList = ({
   itemName,
   updateItem,
 }: interestPersonsProps) => {
-  const { theme, userData, fetchData, setData, setLastDoc, setAlertMessage, setAlertTitle, showAlert } = useStore();
+  const { inventoryDispatch, inventoryState, theme, userData, fetchInventoryDataCallBack, setData, setLastDoc, setAlertMessage, setAlertTitle, showAlert } = useStore();
   const [closeConfirmation, setCloseConfirmation] = useState<boolean>(
     reciever !== "" ? true : false
   );
@@ -127,9 +127,10 @@ const InterestedPersonsList = ({
       };
       handleRemoveReciever(data).then((res: any) => {
         updateItem();
-        setData([]);
-        setLastDoc(null);
-        fetchData();
+        fetchInventoryDataCallBack()
+        // setData([]);
+        // setLastDoc(null);
+        // fetchData();
         setAlertMessage(res?.message)
         setAlertTitle("Interest Updates")
         showAlert()
@@ -165,12 +166,12 @@ const InterestedPersonsList = ({
       recipientId: confirmation,
     };
 
-    const res = await handleInterest(dat);
+    const res = await handleInterest(dat)(inventoryDispatch);
     if (res?.statusCode === 200) {
       updateItem();
-      setData([]);
-      setLastDoc(null);
-      fetchData();
+      // setData([]);
+      // setLastDoc(null);
+      fetchInventoryDataCallBack()
       setAlertMessage(res?.message)
         setAlertTitle("Interest Updates")
         showAlert()

@@ -1,29 +1,56 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Wrapper from "../../components/Wrapper";
 import { Text, View } from "../../components/Themed";
 import { useStore } from "../store";
 import ItemList from "../../components/Catalog/ItemList";
 import { primaryYellow } from "../../constants/Colors";
+import { handleCatalogList } from "../db/apis";
+import Loader from "../../components/Loader";
 
 const title = "Catalog";
 
 function CatalogScreenView() {
-  const { theme, donorData, requestData, setRequestData, setDonorData, allData, userData } = useStore();
+  const {inventoryState, authState, inventoryDispatch, theme, donorData, requestData, setRequestData, setDonorData, allData, userData } = useStore();
   const [activeTab, setActiveTab] = useState("One");
+  const [change, setChange] = useState<boolean>(false);
 
   const handleTabPress = (tabName: string) => {
     setActiveTab(tabName);
   };
 
   useEffect(() => {
+    // console.log(change, 'chhhhx')
+    handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+  }, [change])
+
+  useEffect(() => {
+    handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+  }, [])
+  
+  // console.log("handle---", inventoryState.catalog)
+  const updateData = useCallback(() => {
+    // handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
     setRequestData(
-      allData?.filter((item) =>
+      inventoryState.catalog?.filter((item) =>
         item?.interestedParties?.includes(userData?.id as string)
       )
     );
-    setDonorData(allData?.filter((item) => item?.donor === userData?.id));
-  }, [])
+    setDonorData(inventoryState.catalog?.filter((item) => item?.donor === userData?.id));
+}, [inventoryState.catalog])
+
+useEffect(() => {
+    updateData()
+}, [updateData])
+
+  // useEffect(() => {
+  //   setRequestData(
+  //     inventoryState.inventory?.filter((item) =>
+  //       item?.interestedParties?.includes(userData?.id as string)
+  //     )
+  //   );
+  //   setDonorData(inventoryState.inventory?.filter((item) => item?.donor === userData?.id));
+  // }, [inventoryState.inventory])
   
   const tabArr = [
     {
@@ -75,7 +102,7 @@ function CatalogScreenView() {
         </View>
 
         <View style={styles.contentContainer}>
-          <ItemList dataa={activeTab === "One" ? donorData : requestData} />
+        <ItemList change={change} setChange={setChange} dataa={activeTab === "One" ? donorData : requestData} />
         </View>
       </View>
     </>

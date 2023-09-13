@@ -8,6 +8,13 @@ import {
 } from "react-native";
 import { primaryYellow } from "../../constants/Colors";
 import { useStore } from "../../app/store";
+import * as Crypto from "expo-crypto";
+import {
+  MaterialCommunityIcons,
+  AntDesign,
+  FontAwesome5,
+  Ionicons,
+} from "@expo/vector-icons";
 
 const styles = StyleSheet.create({
   container: {
@@ -51,14 +58,12 @@ export type categoryProps = {
 };
 
 export type dataProps = {
-  data: categoryProps[];
   selectedCategory: categoryProps | null;
   setSelectedCategory: React.Dispatch<
     React.SetStateAction<categoryProps | null>
   >;
 };
 const Categories = ({
-  data,
   setSelectedCategory,
   selectedCategory,
 }: dataProps) => {
@@ -68,6 +73,153 @@ const Categories = ({
     setLoading(true);
     setSelectedCategory(item);
   };
+
+  const data: categoryProps[] = [
+    {
+      id: Crypto.randomUUID(),
+      category: null,
+      icon: (
+        <AntDesign
+          name="CodeSandbox"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <AntDesign
+          name="CodeSandbox"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Food",
+      icon: (
+        <MaterialCommunityIcons
+          name="food-turkey"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <MaterialCommunityIcons
+          name="food-turkey"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Utensils",
+      icon: (
+        <FontAwesome5
+          name="utensils"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <FontAwesome5
+          name="utensils"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Wears",
+      icon: (
+        <Ionicons
+          name="ios-watch"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <Ionicons
+          name="ios-watch"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Cash",
+      icon: (
+        <MaterialCommunityIcons
+          name="piggy-bank-outline"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <MaterialCommunityIcons
+          name="piggy-bank-outline"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Gadgets",
+      icon: (
+        <MaterialCommunityIcons
+          name="monitor-cellphone"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <MaterialCommunityIcons
+          name="monitor-cellphone"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Furnitures",
+      icon: (
+        <MaterialCommunityIcons
+          name="table-furniture"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <MaterialCommunityIcons
+          name="table-furniture"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
+    },
+    {
+      id: Crypto.randomUUID(),
+      category: "Others",
+      icon: (
+        <AntDesign
+          name="questioncircle"
+          size={24}
+          color={theme === "dark" ? primaryYellow : "#232323"}
+        />
+      ),
+      iconActive: (
+        <AntDesign
+          name="questioncircle"
+          size={24}
+          color={theme === "dark" ? "#000" : "#232323"}
+        />
+      ),
+    },
+  ];
 
   return (
     <View>

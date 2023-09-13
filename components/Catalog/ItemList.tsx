@@ -17,6 +17,8 @@ import { Naira } from "../Naira";
 
 interface interestPersonsProps {
   dataa: GridItem[];
+  change: boolean;
+  setChange: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const styles = StyleSheet.create({
@@ -118,10 +120,11 @@ const styles = StyleSheet.create({
   },
 });
 
-const ItemList = ({ dataa }: interestPersonsProps) => {
+const ItemList = ({ dataa, setChange, change }: interestPersonsProps) => {
   const { theme, userData, setLoading } = useStore();
 
   const handleItemDetails = (id: string) => {
+    setChange(!change)
     setLoading(true);
     router.push({
       pathname: "/item",

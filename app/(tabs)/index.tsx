@@ -1,247 +1,77 @@
 import { StyleSheet, Pressable } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Text, View } from "../../components/Themed";
 import { useStore } from "../store";
 import Header from "../../components/Home/Header";
 import SearchBar from "../../components/Home/Search";
-import { ItemPropsWithID, Item2Props, handleDonationList } from "../db/apis";
 import Loader from "../../components/Loader";
 import Categories, { categoryProps }  from "../../components/Home/Category";
-import GridList, { GridItem } from "../../components/Home/GridList";
-import * as Crypto from "expo-crypto";
+import GridList from "../../components/Home/GridList";
 import {
   MaterialCommunityIcons,
-  AntDesign,
-  FontAwesome5,
-  Ionicons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { primaryYellow } from "../../constants/Colors";
+import { fetchInventoryData } from "../db/apis";
 
 function HomeScreen() {
   const {
-    loading,
     theme,
-    setLoading,
-    data,
-    setData,
-    fetchData,
-    lastDoc,
-    setLastDoc,
+    inventoryDispatch,
+    inventoryState,
+    fetchInventoryDataCallBack
   } = useStore();
 
-  const [searchArr, setSearchArr] = useState<
-    ItemPropsWithID[] | Item2Props[] | null
-  >(null);
-  const [backUpArr, setBackUpArr] = useState<GridItem[]>([]);
   const [selectedCategory, setSelectedCategory] =
     useState<categoryProps | null>(null);
   const [type, setType] = useState<number>(0);
   const [searchText, setSearchText] = useState<string>("");
 
-  const fetchDataa = () => {
-    setLoading(true);
-    setSearchArr(null);
-    setSelectedCategory(null);
-    setType(0);
-    setSearchText("");
-    fetchData();
-  };
+//   const fetchInventoryDataCallBack = useCallback(() => {
+//     const data: any = {
+//       oldData: inventoryState.inventory,
+//       category: ''
+//     }
+//     fetchInventoryData(data)(inventoryDispatch)
+// }, [])
 
-  useEffect(() => {
-    handleDonationList().then((result: any) => {
-      setBackUpArr(result?.resultArray);
-    });
-  }, []);
+// useEffect(() => {
+//   fetchInventoryDataCallBack()
+// }, [fetchInventoryDataCallBack])
 
+  // useEffect(() => {
+  //   const data: any = {
+  //     oldData: inventoryState.oldInventory
+  //   }
+  //   fetchInventoryData(data)(inventoryDispatch)
+  // }, [])
+ 
   useEffect(() => {
     if (selectedCategory === null) {
-      fetchDataa();
+      fetchInventoryDataCallBack()
     } else {
-      handleDonationList()
-        .then((result: any) => {
-          setBackUpArr(result?.resultArray);
-        })
-        .then(() => {
-          setLoading(true);
-          const x = backUpArr?.filter(
-            (item) => item?.category === selectedCategory?.category
-          );
-          setData(x);
-          setLoading(false);
-        });
+      const data: any = {
+        oldData: inventoryState.inventory,
+        category: selectedCategory.category
+      }
+      fetchInventoryData(data)(inventoryDispatch)
     }
   }, [selectedCategory]);
 
-  useEffect(() => {
-    if (searchArr) {
-      setData(searchArr);
-      setType(1);
-    }
-  }, [searchArr, data]);
-
-  const categoryArr = [
-    {
-      id: Crypto.randomUUID(),
-      category: null,
-      icon: (
-        <AntDesign
-          name="CodeSandbox"
-          size={24}
-          color={theme === "dark" ? primaryYellow : "#232323"}
-        />
-      ),
-      iconActive: (
-        <AntDesign
-          name="CodeSandbox"
-          size={24}
-          color={theme === "dark" ? "#000" : "#232323"}
-        />
-      ),
-    },
-    {
-      id: Crypto.randomUUID(),
-      category: "Food",
-      icon: (
-        <MaterialCommunityIcons
-          name="food-turkey"
-          size={24}
-          color={theme === "dark" ? primaryYellow : "#232323"}
-        />
-      ),
-      iconActive: (
-        <MaterialCommunityIcons
-          name="food-turkey"
-          size={24}
-          color={theme === "dark" ? "#000" : "#232323"}
-        />
-      ),
-    },
-    {
-      id: Crypto.randomUUID(),
-      category: "Utensils",
-      icon: (
-        <FontAwesome5
-          name="utensils"
-          size={24}
-          color={theme === "dark" ? primaryYellow : "#232323"}
-        />
-      ),
-      iconActive: (
-        <FontAwesome5
-          name="utensils"
-          size={24}
-          color={theme === "dark" ? "#000" : "#232323"}
-        />
-      ),
-    },
-    {
-      id: Crypto.randomUUID(),
-      category: "Wears",
-      icon: (
-        <Ionicons
-          name="ios-watch"
-          size={24}
-          color={theme === "dark" ? primaryYellow : "#232323"}
-        />
-      ),
-      iconActive: (
-        <Ionicons
-          name="ios-watch"
-          size={24}
-          color={theme === "dark" ? "#000" : "#232323"}
-        />
-      ),
-    },
-    {
-      id: Crypto.randomUUID(),
-      category: "Cash",
-      icon: (
-        <MaterialCommunityIcons
-          name="piggy-bank-outline"
-          size={24}
-          color={theme === "dark" ? primaryYellow : "#232323"}
-        />
-      ),
-      iconActive: (
-        <MaterialCommunityIcons
-          name="piggy-bank-outline"
-          size={24}
-          color={theme === "dark" ? "#000" : "#232323"}
-        />
-      ),
-    },
-    {
-      id: Crypto.randomUUID(),
-      category: "Gadgets",
-      icon: (
-        <MaterialCommunityIcons
-          name="monitor-cellphone"
-          size={24}
-          color={theme === "dark" ? primaryYellow : "#232323"}
-        />
-      ),
-      iconActive: (
-        <MaterialCommunityIcons
-          name="monitor-cellphone"
-          size={24}
-          color={theme === "dark" ? "#000" : "#232323"}
-        />
-      ),
-    },
-    {
-      id: Crypto.randomUUID(),
-      category: "Furnitures",
-      icon: (
-        <MaterialCommunityIcons
-          name="table-furniture"
-          size={24}
-          color={theme === "dark" ? primaryYellow : "#232323"}
-        />
-      ),
-      iconActive: (
-        <MaterialCommunityIcons
-          name="table-furniture"
-          size={24}
-          color={theme === "dark" ? "#000" : "#232323"}
-        />
-      ),
-    },
-    {
-      id: Crypto.randomUUID(),
-      category: "Others",
-      icon: (
-        <AntDesign
-          name="questioncircle"
-          size={24}
-          color={theme === "dark" ? primaryYellow : "#232323"}
-        />
-      ),
-      iconActive: (
-        <AntDesign
-          name="questioncircle"
-          size={24}
-          color={theme === "dark" ? "#000" : "#232323"}
-        />
-      ),
-    },
-  ];
 
   return (
     <View style={styles.container}>
       <Header />
       <SearchBar
-        setSearchArr={setSearchArr}
+        fetchData={fetchInventoryDataCallBack}
         searchText={searchText}
         setSearchText={setSearchText}
       />
 
       <Categories
-        data={categoryArr}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
       />
-      {loading ? (
+      {inventoryState?.loading ? (
         <Loader />
       ) : (
         <View style={styles.lowerSection}>
@@ -257,14 +87,11 @@ function HomeScreen() {
               ? "Search result"
               : "All Donations close to you "}
           </Text>
-          {/* <Text>{selectedCategory?.category} - cate</Text> */}
-          {data?.length > 0 ? (
+          {inventoryState.inventory?.length > 0 ? (
             <GridList
-              data={data}
-              lastDoc={lastDoc}
-              setData={setData}
-              setLastDoc={setLastDoc}
-              fetchData={fetchData}
+              data={inventoryState.inventory}
+              lastDoc={inventoryState.oldInventory}
+              fetchData={fetchInventoryData}
             />
           ) : (
             <View style={styles.noResult}>
@@ -291,7 +118,7 @@ function HomeScreen() {
                   Oops! your search yield no result
                 </Text>
               )}
-              <Pressable style={styles.refresh} onPress={() => fetchDataa()}>
+              <Pressable style={styles.refresh} onPress={fetchInventoryDataCallBack}>
                 <MaterialCommunityIcons
                   name="database-refresh"
                   size={20}

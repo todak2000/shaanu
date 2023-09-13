@@ -18,7 +18,7 @@ const ResetForm = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { loading, theme, setLoading, userData, isRegistered, setAlertMessage, setAlertTitle, showAlert } = useStore();
+  const { authDispatch, authState, loading, theme, setLoading, userData, isRegistered, setAlertMessage, setAlertTitle, showAlert } = useStore();
 
   useEffect(() => {
     if (!isRegistered) {
@@ -30,9 +30,10 @@ console.log("reset scren")
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
-    setLoading(true);
+    // setLoading(true);
+    setScreen(3);
     actions.setSubmitting(false);
-    handlePasswordReset(values).then((res) => {
+    handlePasswordReset(values)(authDispatch).then((res) => {
       if (res === 200) {
         setAlertMessage("A password reset link has been sent to your email.")
         setAlertTitle("Reset Password Updates!")
@@ -46,7 +47,7 @@ console.log("reset scren")
         setAlertTitle("Unknown Error!")
         showAlert()
       }
-      setLoading(false);
+      // setLoading(false);
     });
   };
 
@@ -81,7 +82,7 @@ console.log("reset scren")
               title="Send Email"
               icon={false}
               color={theme === "dark" ? primaryYellow : "black"}
-              isLoading={loading}
+              isLoading={authState.loading}
               theme={theme}
             />
           </View>
@@ -90,7 +91,7 @@ console.log("reset scren")
 
       <TouchableOpacity onPress={() => setScreen(1)} style={styles.touch}>
         <Ionicons name="arrow-back-circle-outline" size={20} color="black" />
-        <Text style={styles.redirect}>
+        <Text style={[styles.redirect, {color: theme === 'dark' ? '#d0d0d0': '#232323',}]}>
           {" "}
           Back to <Text style={styles.yellow}>Sign in Here</Text>
         </Text>
@@ -115,8 +116,7 @@ const styles = StyleSheet.create({
     marginTop: -10,
   },
   redirect: {
-    textAlign: "center",
-    color: "#232323",
+    textAlign: "center",  
     verticalAlign: "middle",
     fontFamily: "MuseoRegular",
   },

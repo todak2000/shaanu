@@ -6,7 +6,10 @@ import CustomTextInput from "../../components/TextInput";
 import { useStore } from "../store";
 import { handleSignInAuth } from "../db/apis";
 import { SigninSchema } from "../utils/yup";
+import { getLocalItem } from "../utils/localStorage";
 import { primaryRed, primaryYellow } from "../../constants/Colors";
+import { useRouter } from "expo-router";
+
 interface FormValues {
   email: string;
   password: string;
@@ -17,8 +20,8 @@ const SigninForm = ({
 }: {
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const { setExpoPushToken, loading, setLoading, setUserData, userData, theme, showAlert, setAlertMessage,setAlertTitle, isRegistered } = useStore();
-
+  const router = useRouter()
+  const {authDispatch, authState, setExpoPushToken, loading, setLoading, setUserData, userData, theme, showAlert, setAlertMessage,setAlertTitle, isRegistered } = useStore();
   useEffect(() => {
     if (isRegistered) {
       setScreen(0);
@@ -30,26 +33,14 @@ const SigninForm = ({
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
-    setLoading(true);
     actions.setSubmitting(false);
-  
-    // const timeoutPromise = new Promise((resolve, reject) => {
-    //   setTimeout(() => {
-    //     setLoading(false)
-    //     reject(new Error("Oops! Something went wrong"));
-    //   }, 10000);
-    // });
-  
-    // const signInPromise = handleSignInAuth(values);
-  
+ 
     try {
-      const res: any  = await handleSignInAuth(values)
-      console.log(res, 'sdsdsds')
-      // const res: any = await Promise.race([timeoutPromise, signInPromise]);
-      setLoading(false);
+      const res: any  = await handleSignInAuth(values)(authDispatch)
+      console.log(authState.isRegistered,'sdsdsd')
       if (res?.statusCode === 200 && res?.userData?.isVerified) {
-        setUserData(res?.userData);
-        setExpoPushToken(res?.userData.expoPushToken)
+        router.push('/(tabs)')
+        // console.log(authState, 'authstate--------')
       } else if (res?.statusCode === 200 && !res?.userData?.isVerified) {
         setAlertMessage("Please check your email to verify your account. Thank you.")
         setAlertTitle("Verify your Account!")
@@ -64,7 +55,6 @@ const SigninForm = ({
         showAlert()
         
       } else {
-        // console.log(res, "unknonw")
         setAlertMessage("Oops! an error occurred")
         setAlertTitle("Unknown Error!")
         showAlert()
@@ -82,8 +72,8 @@ const SigninForm = ({
     <View style={styles.container}>
       
       <Formik
-        // initialValues={{ password: "daniel12345", email: "todak2000@gmail.com" }}
-        initialValues={{ password: "", email: "" }}
+        initialValues={{ password: "daniel12345", email: "todak2000@gmail.com" }}
+        // initialValues={{ password: "", email: "" }}
         validationSchema={SigninSchema}
         onSubmit={handleSubmit}
       >
@@ -121,7 +111,7 @@ const SigninForm = ({
               title="Sign in"
               icon={false}
               color={theme === "dark" ? primaryYellow : "black"}
-              isLoading={loading}
+              isLoading={authState.loading}
               theme={theme}
             />
           </View>
@@ -129,12 +119,12 @@ const SigninForm = ({
       </Formik>
 
       <TouchableOpacity onPress={() => setScreen(2)}>
-        <Text style={styles.redirect}>
+      <Text style={[styles.redirect, {color: theme === 'dark' ? '#d0d0d0': '#232323',}]}>
           Yet to register? <Text style={styles.yellow}>Sign up Here</Text>
         </Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => setScreen(3)}>
-        <Text style={styles.redirect}>
+      <Text style={[styles.redirect, {color: theme === 'dark' ? '#d0d0d0': '#232323',}]}>
           Forgot your password? <Text style={styles.yellow}>Reset it here</Text>
         </Text>
       </TouchableOpacity>
@@ -162,7 +152,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 16,
     textAlign: "center",
-    color: "#232323",
     fontFamily: "MuseoRegular",
   },
   yellow: {

@@ -3,22 +3,21 @@ import { View, TextInput, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { handleSearch } from "../../app/db/apis";
 import { useStore } from "../../app/store";
-import { Item2Props } from "../../app/db/apis";
 
 const SearchBar = ({
-  setSearchArr,
+  fetchData,
   searchText,
   setSearchText,
 }: {
-  setSearchArr: React.Dispatch<React.SetStateAction<Item2Props[] | null>>;
+  fetchData: () => void
   searchText: string;
   setSearchText: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-  const { setLoading, theme, refreshing } = useStore();
+  const {inventoryState, inventoryDispatch, setLoading, theme, refreshing } = useStore();
 
   useEffect(() => {
     if (searchText == "") {
-      setSearchArr(null);
+      fetchData()
     }
   }, [searchText]);
 
@@ -30,11 +29,7 @@ const SearchBar = ({
 
   const updateSearch = async (text: string) => {
     setSearchText(text);
-    setLoading(true);
-    await handleSearch(text).then((result: any) => {
-      setLoading(false);
-      setSearchArr(result?.searchResultArray);
-    });
+    await handleSearch(text)(inventoryDispatch).then((result: any) => {});
   };
 
   return (

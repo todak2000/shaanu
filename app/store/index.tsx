@@ -5,15 +5,18 @@ import React, {
   useEffect,
   useMemo,
   useRef,
+  useReducer,
+  useCallback
 } from "react";
 import { auth } from "../db/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { userDataProps, handleAddExpoToken, handleRemoveExpoToken } from "../db/apis";
+import { userDataProps, handleAddExpoToken, handleRemoveExpoToken, getUserData, handleCatalogList } from "../db/apis";
 import useAsyncStorage from "../utils/hooks";
 import { useColorScheme, Platform } from "react-native";
 import { GridItem } from "../../components/Home/GridList";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import { fetchInventoryData } from "../db/apis";
 import {
   collection,
   DocumentData,
@@ -28,10 +31,51 @@ import {
 } from "firebase/firestore";
 import { db } from "../db/firebase";
 import * as Location from "expo-location";
+import AuthReducer from './reducers/authReducer'
+import InventoryReducer from "./reducers/inventoryReducer";
+import { getLocalItem, removeLocalItem, saveLocalItem } from "../utils/localStorage";
 
 const projectId = process.env.EXPO_PUBLIC_projectId;
 
+interface authProps {
+  isRegistered: boolean
+  userData: userDataProps | null
+  loading: boolean
+  error: any
+}
+
+interface inventoryProps {
+  loading: boolean
+  error: any
+  inventory: any[]
+  oldInventory: any[]
+  catalog: any[]
+  singleItem: any
+}
+
+const inventoryInitialState: inventoryProps = {
+  inventory: [],
+  oldInventory: [],
+  catalog: [],
+  singleItem: {},
+  loading: false,
+  error: null,
+}
+
+const authInitialState: authProps = {
+  isRegistered: false,
+  userData: null,
+  loading: false,
+  error: null
+}
+
 export type StoreContextProps = {
+  authState: authProps
+  authDispatch: React.Dispatch<any>
+  inventoryState: inventoryProps
+  inventoryDispatch: React.Dispatch<any>
+  fetchInventoryDataCallBack:any
+
   userData: userDataProps | null;
   setUserData: React.Dispatch<React.SetStateAction<any>>;
   loading: boolean;
@@ -46,12 +90,12 @@ export type StoreContextProps = {
   setCurrentLoc: React.Dispatch<React.SetStateAction<string>>;
   data: GridItem[];
   setData: React.Dispatch<React.SetStateAction<GridItem[]>>;
-  fetchData: any;
+  // fetchData: any;
   lastDoc: any;
   setLastDoc: React.Dispatch<React.SetStateAction<any>>;
   allData: GridItem[];
   setAllData: React.Dispatch<React.SetStateAction<GridItem[]>>;
-  getAllItemDataStore: any;
+  // getAllItemDataStore: any;
   getLocation: any;
   donorData: GridItem[];
   setDonorData: React.Dispatch<React.SetStateAction<GridItem[]>>;
@@ -74,6 +118,12 @@ export type StoreContextProps = {
 };
 
 export const StoreContext = createContext<StoreContextProps>({
+  authState: authInitialState,
+  authDispatch: () => null,
+  inventoryState: inventoryInitialState,
+  inventoryDispatch: () => null,
+  fetchInventoryDataCallBack: () => null,
+
   userData: null,
   setUserData: () => null,
   loading: false,
@@ -88,12 +138,12 @@ export const StoreContext = createContext<StoreContextProps>({
   setCurrentLoc: () => null,
   data: [],
   setData: () => null,
-  fetchData: () => null,
+  // fetchData: () => null,
   lastDoc: null,
   setLastDoc: () => null,
   allData: [],
   setAllData: () => null,
-  getAllItemDataStore: () => null,
+  // getAllItemDataStore: () => null,
   donorData: [],
   setDonorData: () => null,
   requestData: [],
@@ -123,6 +173,11 @@ Notifications.setNotificationHandler({
 });
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
+  const [authState, authDispatch] = useReducer(AuthReducer, authInitialState)
+  const [inventoryState, inventoryDispatch] = useReducer(InventoryReducer, inventoryInitialState)
+
+
+
   const [userData, setUserData] = useAsyncStorage("userData", {});
   const [refreshing, setRefreshing] = useState(false);
   const [curentLoc, setCurrentLoc] = useState("Searching...");
@@ -155,40 +210,40 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     setAlertVisible(false);
   };
 
-  const getAllItemDataStore = async () => {
+  // const getAllItemDataStore = async () => {
     
-    if (auth.currentUser) {
-      const boardDB = collection(db, "Inventory");
-      onSnapshot(boardDB, (querySnapshot) => {
-        if (querySnapshot) {
-          setAllData(() => {
-            const newData = querySnapshot.docs.map(
-              (doc) => ({ id: doc.id, ...doc.data() } as GridItem)
-            );
-            return newData;
-          });
-        }
-      });
-    }
+  //   if (auth.currentUser) {
+  //     const boardDB = collection(db, "Inventory");
+  //     onSnapshot(boardDB, (querySnapshot) => {
+  //       if (querySnapshot) {
+  //         setAllData(() => {
+  //           const newData = querySnapshot.docs.map(
+  //             (doc) => ({ id: doc.id, ...doc.data() } as GridItem)
+  //           );
+  //           return newData;
+  //         });
+  //       }
+  //     });
+  //   }
     
-  };
+  // };
 
-  const getUserData = () => {
+  // const getUserData = () => {
     
-    try {
-      if (auth.currentUser && userData.id) {
-        const userDataRef = doc(db, "Users", userData.id);
-        onSnapshot(userDataRef, (querySnapshot) => {
-          if (querySnapshot) {
-            const updatedUser: any = { id: userData.id, ...querySnapshot.data() }
-            setUserData(updatedUser);
-          }
-        });
-      }
-    } catch (error) {
-      console.log(error, 'get data error')
-    }
-  }
+  //   try {
+  //     if (auth.currentUser && userData.id) {
+  //       const userDataRef = doc(db, "Users", userData.id);
+  //       onSnapshot(userDataRef, (querySnapshot) => {
+  //         if (querySnapshot) {
+  //           const updatedUser: any = { id: userData.id, ...querySnapshot.data() }
+  //           setUserData(updatedUser);
+  //         }
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.log(error, 'get data error')
+  //   }
+  // }
   
   const deleteToken = async () => {
     try {
@@ -211,9 +266,9 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         token: token as string
       }
       if (token) {
-        x = await handleAddExpoToken(data);
+        x = await handleAddExpoToken(data)(authDispatch);
       }
-      setExpoPushToken(x.token);
+      // setExpoPushToken(x.token);
       return x;
     } catch (error) {
       return null;
@@ -221,18 +276,30 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     
   }
 
+  const fetchInventoryDataCallBack = useCallback(() => {
+    const data: any = {
+      oldData: inventoryState.inventory,
+      category: ''
+    }
+    fetchInventoryData(data)(inventoryDispatch)
+  }, [])
+
   useEffect(() => {
+    fetchInventoryDataCallBack()
+   
+  }, [fetchInventoryDataCallBack])
+
+  const handleAuthStateChanged = useCallback(() => {
     try {
       const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
         auth,
         (user: any) => {
-          if (user && user.emailVerified) {
-            getUserData();
-            setIsRegistered(true);
-          } else {
-            // User is signed out
-            setUserData({});
-            setIsRegistered(false);
+          if (user && user?.emailVerified) {
+            getLocalItem('userData').then((item: any) => {
+              getUserData(item?.id)
+            })
+          } else  {
+            saveLocalItem('userData', '').then(() => {})
           }
         }
       );
@@ -240,8 +307,34 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.log(error, 'errorr')
     }
+  }, [auth]);
+
+  useEffect(() => {
+      handleAuthStateChanged()
+  }, [handleAuthStateChanged])
+
+
+  // useEffect(() => {
+  //   try {
+      
+  //     const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
+  //       auth,
+  //       (user: any) => {
+  //         if (user && user?.emailVerified) {
+  //           getLocalItem('userData').then((item: any) => {
+  //             getUserData(item?.id)
+  //           })
+  //         } else  {
+  //           saveLocalItem('userData', '').then(() => {})
+  //         }
+  //       }
+  //     );
+  //     return unsubscribeFromAuthStatuChanged;
+  //   } catch (error) {
+  //     console.log(error, 'errorr')
+  //   }
     
-  });
+  // });
 
   const getLocation = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -258,9 +351,9 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
             latitude,
             longitude,
           });
-          let fullLoc = response[0].city + ", " + response[0].region;
+          let fullLoc = response[0]?.city + ", " + response[0]?.region;
           setCurrentLoc(fullLoc);
-        });
+        }).catch((err:any) => {console.log(err)});
       }
     }
   };
@@ -270,13 +363,13 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   }, [curentLoc]);
 
   useEffect(() => {
-    getAllItemDataStore();
-    setRequestData(
-      allData?.filter((item) =>
-        item?.interestedParties?.includes(userData?.id as string)
-      )
-    );
-    setDonorData(allData?.filter((item) => item?.donor === userData?.id));
+    // getAllItemDataStore();
+    // setRequestData(
+    //   allData?.filter((item) =>
+    //     item?.interestedParties?.includes(userData?.id as string)
+    //   )
+    // );
+    // setDonorData(allData?.filter((item) => item?.donor === userData?.id));
     
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
@@ -344,48 +437,54 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     }, 2000);
   }, []);
 
-  const fetchData = async (afterDoc?: DocumentData | null) => {
-    try {
-      let searchQuery;
-      const boardDB = collection(db, "Inventory");
-      if (afterDoc) {
-        const initQuery = query(
-          boardDB,
-          where("status", "==", "Available"),
-          orderBy("createdAt", "desc"),
-          limit(20)
-        );
-        searchQuery = query(initQuery, startAfter(afterDoc));
-      } else {
-        searchQuery = query(
-          boardDB,
-          where("status", "==", "Available"),
-          orderBy("createdAt", "desc"),
-          limit(20)
-        );
-      }
+  // const fetchData = async (afterDoc?: DocumentData | null) => {
+  //   try {
+  //     let searchQuery;
+  //     const boardDB = collection(db, "Inventory");
+  //     if (afterDoc) {
+  //       const initQuery = query(
+  //         boardDB,
+  //         where("status", "==", "Available"),
+  //         orderBy("createdAt", "desc"),
+  //         limit(20)
+  //       );
+  //       searchQuery = query(initQuery, startAfter(afterDoc));
+  //     } else {
+  //       searchQuery = query(
+  //         boardDB,
+  //         where("status", "==", "Available"),
+  //         orderBy("createdAt", "desc"),
+  //         limit(20)
+  //       );
+  //     }
 
-      const snapshot = await getDocs(searchQuery);
+  //     const snapshot = await getDocs(searchQuery);
 
-      if (!snapshot.empty) {
-        setData((prevData) => {
-          const uniqueIds = new Set(prevData.map((item) => item.id));
-          const newData = snapshot.docs
-            .map((doc) => ({ id: doc.id, ...doc.data() } as GridItem))
-            .filter((item) => !uniqueIds.has(item.id))
-            .filter((newItem) => newItem.interestedParties.length < 5);
-          return [...prevData, ...newData];
-        });
-        setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-    setLoading(false);
-  };
+  //     if (!snapshot.empty) {
+  //       setData((prevData) => {
+  //         const uniqueIds = new Set(prevData.map((item) => item.id));
+  //         const newData = snapshot.docs
+  //           .map((doc) => ({ id: doc.id, ...doc.data() } as GridItem))
+  //           .filter((item) => !uniqueIds.has(item.id))
+  //           .filter((newItem) => newItem.interestedParties.length < 5);
+  //         return [...prevData, ...newData];
+  //       });
+  //       setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  //   setLoading(false);
+  // };
 
   const value = useMemo(
     () => ({
+      authDispatch,
+      authState,
+      inventoryState, 
+      inventoryDispatch,
+      fetchInventoryDataCallBack,
+
       userData,
       setUserData,
       loading,
@@ -400,12 +499,12 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       setCurrentLoc,
       data,
       setData,
-      fetchData,
+      // fetchData,
       lastDoc,
       setLastDoc,
       allData,
       setAllData,
-      getAllItemDataStore,
+      // getAllItemDataStore,
       requestData,
       setRequestData,
       donorData,
@@ -426,6 +525,12 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       setAlertTitle,
     }),
     [
+      authDispatch,
+      authState,
+      inventoryState, 
+      inventoryDispatch,
+      fetchInventoryDataCallBack,
+
       userData,
       setUserData,
       loading,
@@ -440,12 +545,12 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       setCurrentLoc,
       data,
       setData,
-      fetchData,
+      // fetchData,
       lastDoc,
       setLastDoc,
       allData,
       setAllData,
-      getAllItemDataStore,
+      // getAllItemDataStore,
       requestData,
       setRequestData,
       donorData,
