@@ -9,6 +9,7 @@ import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
 import { useColorScheme, LogBox } from "react-native";
 import { StoreProvider } from "./store";
+import { saveLocalItem } from "./utils/localStorage";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -41,6 +42,10 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
+  useEffect(() => {
+    saveLocalItem('theme', "light").then().catch(()=>{})
+  }, [])
+  
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();

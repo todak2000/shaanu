@@ -41,7 +41,7 @@ const SignupForm = ({
 
   const [localLoading, setLocalLoading] = useState<boolean>(false)
   useEffect(() => {
-    if (isRegistered) {
+    if (authState.isRegistered && authState?.userData?.isVerified) {
       setScreen(0);
     } 
     if (loading) {
@@ -99,18 +99,18 @@ const SignupForm = ({
     <View style={styles.container}>
       <Formik
         initialValues={{
-          firstname: "Ola",
-          lastname: "Bade",
-          phoneNumber: "09876563512",
-          password: "dada12345",
-          email: "dada@dada.com",
-          expoPushToken: "",
-          // firstname: "",
-          // lastname: "",
-          // phoneNumber: "",
-          // password: "",
-          // email: "",
+          // firstname: "Ola",
+          // lastname: "Bade",
+          // phoneNumber: "09876563512",
+          // password: "dada12345",
+          // email: "dada@dada.com",
           // expoPushToken: "",
+          firstname: "",
+          lastname: "",
+          phoneNumber: "",
+          password: "",
+          email: "",
+          expoPushToken: "",
         }}
         validationSchema={SignupSchema}
         onSubmit={handleSubmit}

@@ -21,9 +21,9 @@ const SigninForm = ({
   setScreen: React.Dispatch<React.SetStateAction<number>>;
 }) => {
   const router = useRouter()
-  const {authDispatch, authState, theme, showAlert, setAlertMessage,setAlertTitle } = useStore();
+  const {authDispatch, authState, theme, showAlert, isVerified, setAlertMessage,setAlertTitle } = useStore();
   useEffect(() => {
-    if (authState.isRegistered) {
+    if (authState.isRegistered && authState?.userData?.isVerified) {
       setScreen(0);
     }
 
@@ -37,10 +37,12 @@ const SigninForm = ({
  
     try {
       const res: any  = await handleSignInAuth(values)(authDispatch)
-
-      if (res?.statusCode === 200 && res?.userData?.isVerified) {
-        router.push('/(tabs)')
+      if (res?.statusCode === 200 && res?.userData?.isVerified ) {
+        setScreen(0)
+        router.push('/onboarding')
       } else if (res?.statusCode === 200 && !res?.userData?.isVerified) {
+        setScreen(1)
+        router.push('/onboarding')
         setAlertMessage("Please check your email to verify your account. Thank you.")
         setAlertTitle("Verify your Account!")
         showAlert()
@@ -71,8 +73,8 @@ const SigninForm = ({
     <View style={styles.container}>
       
       <Formik
-        initialValues={{ password: "daniel12345", email: "todak2000@gmail.com" }}
-        // initialValues={{ password: "", email: "" }}
+        // initialValues={{ password: "daniel12345", email: "todak2000@gmail.com" }}
+        initialValues={{ password: "", email: "" }}
         validationSchema={SigninSchema}
         onSubmit={handleSubmit}
       >

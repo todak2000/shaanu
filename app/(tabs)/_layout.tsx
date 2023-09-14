@@ -52,6 +52,7 @@ export default function TabLayout() {
   } else if (!authState.isRegistered && authState.loading) {
     return <Loader />;
   }
+ 
   return (
     <>
     <CustomAlert

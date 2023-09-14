@@ -81,7 +81,8 @@ export type StoreContextProps = {
   inventoryState: inventoryProps
   inventoryDispatch: React.Dispatch<any>
   fetchInventoryDataCallBack:any
-
+  isVerified: boolean;
+  setIsverified: React.Dispatch<React.SetStateAction<boolean>>;
   userData: userDataProps | null;
   setUserData: React.Dispatch<React.SetStateAction<any>>;
   loading: boolean;
@@ -169,6 +170,8 @@ export const StoreContext = createContext<StoreContextProps>({
   alertMessage: '', 
   setAlertMessage: ()=> null,
   alertTitle: '', 
+  isVerified: false, 
+  setIsverified: ()=> null,
   setAlertTitle: ()=> null,
 });
 
@@ -203,6 +206,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
   const [alertVisible, setAlertVisible] = useState<boolean>(false);
+  const [isVerified, setIsverified] = useState<boolean>(false);
   const [alertTitle, setAlertTitle] = useState<string>("");
   const [alertMessage, setAlertMessage] = useState<string>("");
   const [theme, setTheme] = useState<string>("light");
@@ -304,13 +308,19 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         auth,
         (user: any) => {
           if (user && user?.emailVerified) {
+            setIsverified(true)
             getLocalItem('userData').then((item: any) => {
               // getUserData(item?.id)(authDispatch)
             })
             getLocalItem('theme').then((item: any) => {
               setTheme(item)
+            }).catch((err) =>{
+              saveLocalItem('theme', "light").then(()=>{
+                setTheme('dark')
+              }).catch(()=>{})
             })
           } else  {
+            setIsverified(false)
             saveLocalItem('userData', '').then(() => {})
           }
         }
@@ -535,7 +545,8 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       setAlertMessage,
       alertTitle, 
       setAlertTitle,
-      setTheme
+      setTheme,
+      isVerified, setIsverified
     }),
     [
       authDispatch,
@@ -543,7 +554,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       inventoryState, 
       inventoryDispatch,
       fetchInventoryDataCallBack,
-
+      isVerified, setIsverified,
       userData,
       setUserData,
       loading,
