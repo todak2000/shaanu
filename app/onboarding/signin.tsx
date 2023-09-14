@@ -4,7 +4,7 @@ import Button from "../../components/Button";
 import { Formik, FormikHelpers } from "formik";
 import CustomTextInput from "../../components/TextInput";
 import { useStore } from "../store";
-import { handleSignInAuth } from "../db/apis";
+import { handleSignInAuth, handleSignOut } from "../db/apis";
 import { SigninSchema } from "../utils/yup";
 import { getLocalItem } from "../utils/localStorage";
 import { primaryRed, primaryYellow } from "../../constants/Colors";
@@ -38,11 +38,11 @@ const SigninForm = ({
     try {
       const res: any  = await handleSignInAuth(values)(authDispatch)
       if (res?.statusCode === 200 && res?.userData?.isVerified ) {
-        setScreen(0)
-        router.push('/onboarding')
+        // setScreen(0)
+        // router.push('/onboarding')
       } else if (res?.statusCode === 200 && !res?.userData?.isVerified) {
-        setScreen(1)
-        router.push('/onboarding')
+        // handleSignOut
+        handleSignOut()(authDispatch).then(() => router.push('/onboarding')).catch((err) => {console.log(err)})
         setAlertMessage("Please check your email to verify your account. Thank you.")
         setAlertTitle("Verify your Account!")
         showAlert()

@@ -105,9 +105,9 @@ type chatCorrespondenceProps = {
 export const auth: any = getAuth(app);
 
 // Delete User Account
-export const handleDeleteAccount = async (userId: string): Promise<number> => {
+export const handleDeleteAccount =(userId: string)=> async(dispatch: Dispatch<any>): Promise<number> => {
   let statusCode: number;
-
+  dispatch({ type: LOGIN_LOADING, loading: true })
   try {
     const user = auth.currentUser;
     if (!user) {
@@ -116,8 +116,10 @@ export const handleDeleteAccount = async (userId: string): Promise<number> => {
     const deleteRef = doc(db, "Users", userId);
     await setDoc(deleteRef, { isActive: false }, { merge: true });
     await deleteUser(user);
+    dispatch({ type: LOGOUT_SUCCESS, loading: false })
     statusCode = 200;
   } catch (err: any) {
+    dispatch({ type: LOGIN_LOADING, loading: false })
     console.log(err.message, "err.message");
     if (err.message === "Firebase: Error (auth/requires-recent-login).") {
       statusCode = 501;
@@ -125,6 +127,7 @@ export const handleDeleteAccount = async (userId: string): Promise<number> => {
       statusCode = 509;
     }
   }
+  dispatch({ type: LOGIN_LOADING, loading: false })
   return statusCode;
 };
 

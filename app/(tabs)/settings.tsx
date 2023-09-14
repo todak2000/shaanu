@@ -75,7 +75,7 @@ function SettingsScreenView() {
   }
   const DeleteAccount = () => {
     setLoading(true);
-    handleDeleteAccount(userData?.id as string).then((res) => {
+    handleDeleteAccount(userData?.id as string)(authDispatch).then((res) => {
       if (res === 501) {
         setErr(
           "Please signout and login again before you can delete your account"
