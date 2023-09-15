@@ -7,26 +7,19 @@ import {
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
-import { useColorScheme, LogBox } from "react-native";
-import { StoreProvider } from "./store";
-import { saveLocalItem } from "./utils/localStorage";
-
+import { useColorScheme } from "react-native";
+import { StoreProvider, useStore } from "./store";
 export { ErrorBoundary } from "expo-router";
 
 export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
 
-// Ignore log notifications by message:
-LogBox.ignoreLogs(['[2023-09-10T22:35:05.776Z]  @firebase/firestore: Firestore (10.3.0): Uncaught Error in snapshot listener: FirebaseError: [code=permission-denied]: Missing or insufficient permissions.',
-"TypeError: Cannot read property 'indexOf' of undefined",
-"Possible Unhandled Promise Rejection (id: 62):"
-]); 
-
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     Museo: require("../assets/fonts/MuseoModerno-VariableFont_wght.ttf"),
@@ -42,9 +35,7 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  useEffect(() => {
-    saveLocalItem('theme', "light").then().catch(()=>{})
-  }, [])
+ 
   
   useEffect(() => {
     if (loaded) {
@@ -63,11 +54,11 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
 
-  const colorScheme = useColorScheme();
+  const { theme } = useStore()
 
   return (
     <StoreProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={theme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen
             name="(tabs)"
@@ -79,6 +70,10 @@ function RootLayoutNav() {
           />
           <Stack.Screen name="chat" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding/general" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding/signin" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding/signup" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding/reset" options={{ headerShown: false }} />
         </Stack>
         
       </ThemeProvider>

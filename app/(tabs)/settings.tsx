@@ -1,6 +1,6 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { useStore } from "../store";
-import { Text, TouchableOpacity } from "../../components/Themed";
+import { Text, View, TouchableOpacity } from "../../components/Themed";
 import Button from "../../components/Button";
 import { handleSignOut, handleDeleteAccount, getUserData } from "../db/apis";
 import Wrapper from "../../components/Wrapper";
@@ -21,15 +21,18 @@ const title = "Profile";
 
 function SettingsScreenView() {
   const router = useRouter()
-  const { authDispatch, authState, setTheme, theme, setLoading, curentLoc, userData, getLocation, updateUser, deleteToken, setAlertMessage, setAlertTitle, showAlert  } =
+  const { authDispatch, setIsLogedIn,  setTheme, theme, curentLoc, userData, getLocation, updateUser, deleteToken, setAlertMessage, setAlertTitle, showAlert  } =
     useStore();
   const [err, setErr] = useState("");
-  const [notification, setNotification] = useState<boolean>(authState?.userData?.expoPushToken !== "" ? true : false);
+  const [notification, setNotification] = useState<boolean>(userData?.expoPushToken !== "" ? true : false);
   const [deletePrompt, setDeletePrompt] = useState<boolean>(false);
-  // const [localTheme, setLocalTheme] = useState(theme)
+  const [localLoading, setLocalLoading] = useState(false)
+  const [localLoading2, setLocalLoading2] = useState(false)
 
   useEffect(() => {
-    getUserData(authState?.userData?.id as string)(authDispatch)
+    setLocalLoading(false)
+    setLocalLoading2(false)
+    getUserData(userData?.id as string)(authDispatch)
   },[])
 
   useEffect(() => {
@@ -44,8 +47,10 @@ function SettingsScreenView() {
   }, [curentLoc]);
 
   const SignOut = () => {
-    
-    handleSignOut()(authDispatch).then(() => router.push('/onboarding')).catch((err) => {console.log(err)})
+    setLocalLoading(true)
+    saveLocalItem('isLogedIn', "false").then(()=>setIsLogedIn(false)).catch(()=>{})
+    handleSignOut()(authDispatch).then(() => router.push('/onboarding/signin')).catch((err) => {console.log(err)})
+    setLocalLoading(false)
   };
 
   const handleNotification = async (value: string)=>{
@@ -74,20 +79,23 @@ function SettingsScreenView() {
     }
   }
   const DeleteAccount = () => {
-    setLoading(true);
+    setLocalLoading2(true)
+    console.log("delete clicked")
     handleDeleteAccount(userData?.id as string)(authDispatch).then((res) => {
+      console.log(res, 'delete reuslt')
       if (res === 501) {
-        setErr(
-          "Please signout and login again before you can delete your account"
-        );
+        setAlertMessage("Please signout and login again before you can delete your account")
+        setAlertTitle("One more Hurdle!")
+        showAlert()
       } else if (res === 200) {
         console.log("done");
+        router.push('/onboarding/signin')
       } else {
         setAlertMessage("Oops! an error occurred")
         setAlertTitle("Unknown Error!")
         showAlert()
       }
-      setLoading(false);
+      setLocalLoading2(false);
     }).catch((err:any)=>{console.log(err, 'errr')});
   };
   const cardArr = [
@@ -101,7 +109,7 @@ function SettingsScreenView() {
           color="#7CDBB9"
         />
       ),
-      value: authState?.userData?.donated || 0,
+      value: userData?.donated || 0,
     },
     {
       id: 2,
@@ -109,7 +117,7 @@ function SettingsScreenView() {
       icon: (
         <Ionicons name="arrow-undo-outline" size={34} color={primaryYellow} />
       ),
-      value: authState?.userData?.recieved || 0,
+      value: userData?.recieved || 0,
     },
   ];
 
@@ -203,7 +211,7 @@ function SettingsScreenView() {
             }
           </View>
         </View>
-        {authState?.loading ? 
+        {localLoading ? 
         <IndicatorLoader />
         :
         <>{!deletePrompt &&
@@ -213,13 +221,13 @@ function SettingsScreenView() {
           icon={false}
           color={theme === "dark" ? primaryYellow : "black"}
           theme={theme}
-          isLoading={authState?.loading}
+          isLoading={localLoading}
         />
         }</>
         }
         {deletePrompt ? 
         <>
-          {authState?.loading ? 
+          {localLoading2 ? 
           <IndicatorLoader />
           :
           <>
@@ -256,9 +264,6 @@ function SettingsScreenView() {
             </Text>
         </TouchableOpacity>
         }
-       
-       
-        {/* {err !== "" && <Text style={styles.err}>{err}</Text>} */}
       </View>
     </>
   );

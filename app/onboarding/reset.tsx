@@ -1,36 +1,39 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, Alert } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
 import Button from "../../components/Button";
 import { Formik, FormikHelpers } from "formik";
 import CustomTextInput from "../../components/TextInput";
 import { useStore } from "../store";
+import { View, Text } from "../../components/Themed";
 import { handlePasswordReset } from "../db/apis";
 import { ResetSchema } from "../utils/yup";
 import { primaryRed, primaryYellow } from "../../constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
-
+import { getLocalItem } from "../utils/localStorage";
+import CustomAlert from "../../components/CustomAlert";
+import Logo from "../../assets/images/svgs/logo";
+import { useRouter } from "expo-router";
 interface FormValues {
   email: string;
 }
 
-const ResetForm = ({
-  setScreen,
-}: {
-  setScreen: React.Dispatch<React.SetStateAction<number>>;
-}) => {
-  const { authDispatch, authState, theme, setAlertMessage, setAlertTitle, showAlert } = useStore();
+const ResetForm = () => {
+  const router = useRouter()
+  const { alertVisible, hideAlert, alertTitle, alertMessage, authDispatch, authState, theme, setAlertMessage, setAlertTitle, showAlert } = useStore();
 
   useEffect(() => {
-    if (!authState.isRegistered) {
-      setScreen(3);
-    } 
-  });
+    getLocalItem('isLogedIn').then((islogin)=> {
+      if (islogin === 'true') {
+        router.push('/onboarding/general')
+      }
+    })
+    .catch((error)=> console.log(error))
+  }, [])
 
   const handleSubmit = (
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
-    setScreen(3);
     actions.setSubmitting(false);
     handlePasswordReset(values)(authDispatch).then((res) => {
       if (res === 200) {
@@ -51,6 +54,16 @@ const ResetForm = ({
 
   return (
     <View style={styles.container}>
+      <CustomAlert
+          title={alertTitle}
+          message={alertMessage}
+          visible={alertVisible}
+          onClose={hideAlert}
+        />
+          <Logo color={primaryYellow} />
+          <Text style={styles.title}>Reset Password </Text>
+              <Text style={styles.subTitle}>Lets get back onboard!</Text>
+      <View style={styles.form}>
       <Formik
         initialValues={{ email: "" }}
         validationSchema={ResetSchema}
@@ -86,8 +99,8 @@ const ResetForm = ({
           </View>
         )}
       </Formik>
-
-      <TouchableOpacity onPress={() => setScreen(1)} style={styles.touch}>
+      </View>
+      <TouchableOpacity onPress={() => router.push('/onboarding/signin')} style={styles.touch}>
         <Ionicons name="arrow-back-circle-outline" size={20} color="black" />
         <Text style={[styles.redirect, {color: theme === 'dark' ? '#d0d0d0': '#232323',}]}>
           {" "}
@@ -101,8 +114,24 @@ const ResetForm = ({
 export default ResetForm;
 
 const styles = StyleSheet.create({
+  form: {
+    width: '90%'
+  },
   container: {
-    width: "90%",
+    flex: 1,
+    alignItems: "center",
+    width: '100%',
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 20,
+    fontFamily: "MuseoBold",
+  },
+  subTitle: {
+    color: primaryRed,
+    fontSize: 13,
+    marginBottom: 20,
+    fontFamily: "MuseoRegular",
   },
   middle: {
     marginTop: 40,

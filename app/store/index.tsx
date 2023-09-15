@@ -10,7 +10,7 @@ import React, {
 } from "react";
 import { auth } from "../db/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { userDataProps, handleAddExpoToken, handleRemoveExpoToken, getUserData, handleCatalogList } from "../db/apis";
+import { userDataProps, handleAddExpoToken, handleRemoveExpoToken, getUserData, handleCatalogList, handleSignOut } from "../db/apis";
 import useAsyncStorage from "../utils/hooks";
 import { useColorScheme, Platform } from "react-native";
 import { GridItem } from "../../components/Home/GridList";
@@ -18,22 +18,12 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { fetchInventoryData } from "../db/apis";
 import {
-  collection,
   DocumentData,
-  query,
-  where,
-  orderBy,
-  limit,
-  doc,
-  startAfter,
-  onSnapshot,
-  getDocs,
 } from "firebase/firestore";
-import { db } from "../db/firebase";
 import * as Location from "expo-location";
 import AuthReducer from './reducers/authReducer'
 import InventoryReducer from "./reducers/inventoryReducer";
-import { getLocalItem, removeLocalItem, saveLocalItem } from "../utils/localStorage";
+import { getLocalItem, saveLocalItem } from "../utils/localStorage";
 
 const projectId = process.env.EXPO_PUBLIC_projectId;
 
@@ -81,8 +71,8 @@ export type StoreContextProps = {
   inventoryState: inventoryProps
   inventoryDispatch: React.Dispatch<any>
   fetchInventoryDataCallBack:any
-  isVerified: boolean;
-  setIsverified: React.Dispatch<React.SetStateAction<boolean>>;
+  isLogedIn: boolean;
+  setIsLogedIn: React.Dispatch<React.SetStateAction<boolean>>;
   userData: userDataProps | null;
   setUserData: React.Dispatch<React.SetStateAction<any>>;
   loading: boolean;
@@ -141,7 +131,7 @@ export const StoreContext = createContext<StoreContextProps>({
   refreshing: false,
   setRefreshing: () => null,
   onRefresh: () => null,
-  theme: 'light',
+  theme: '',
   setTheme: ()=> null,
   curentLoc: "",
   setCurrentLoc: () => null,
@@ -170,8 +160,8 @@ export const StoreContext = createContext<StoreContextProps>({
   alertMessage: '', 
   setAlertMessage: ()=> null,
   alertTitle: '', 
-  isVerified: false, 
-  setIsverified: ()=> null,
+  isLogedIn: false, 
+  setIsLogedIn: ()=> null,
   setAlertTitle: ()=> null,
 });
 
@@ -206,13 +196,29 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
   const [alertVisible, setAlertVisible] = useState<boolean>(false);
-  const [isVerified, setIsverified] = useState<boolean>(false);
+  const [isLogedIn, setIsLogedIn] = useState<boolean>(false);
   const [alertTitle, setAlertTitle] = useState<string>("");
   const [alertMessage, setAlertMessage] = useState<string>("");
-  const [theme, setTheme] = useState<string>("light");
+  const [theme, setTheme] = useState<string>("");
+  const colorScheme = useColorScheme()
+  useEffect(() => {
+    const fetchTheme = async () => {
+      const localTheme = await getLocalItem('theme');
+      if (localTheme !== null) {
+        setTheme(localTheme as string);
+      }else{
+        const theme = colorScheme === 'dark'? 'dark' : 'light';
+        await saveLocalItem('theme', theme).then((result) => {
+          console.log('set theme')
+        }).catch((err) => {
+          console.log(err, 'theme error')
+        });
+      }
+      
+    };
   
-
-  // const theme = useColorScheme();
+    fetchTheme();
+  }, []);
 
   const showAlert = () => {
     setAlertVisible(true);
@@ -222,41 +228,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     setAlertVisible(false);
   };
 
-  // const getAllItemDataStore = async () => {
-    
-  //   if (auth.currentUser) {
-  //     const boardDB = collection(db, "Inventory");
-  //     onSnapshot(boardDB, (querySnapshot) => {
-  //       if (querySnapshot) {
-  //         setAllData(() => {
-  //           const newData = querySnapshot.docs.map(
-  //             (doc) => ({ id: doc.id, ...doc.data() } as GridItem)
-  //           );
-  //           return newData;
-  //         });
-  //       }
-  //     });
-  //   }
-    
-  // };
 
-  // const getUserData = () => {
-    
-  //   try {
-  //     if (auth.currentUser && userData.id) {
-  //       const userDataRef = doc(db, "Users", userData.id);
-  //       onSnapshot(userDataRef, (querySnapshot) => {
-  //         if (querySnapshot) {
-  //           const updatedUser: any = { id: userData.id, ...querySnapshot.data() }
-  //           setUserData(updatedUser);
-  //         }
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.log(error, 'get data error')
-  //   }
-  // }
-  
   const deleteToken = async () => {
     try {
       let x = await handleRemoveExpoToken(userData.id);
@@ -280,7 +252,6 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       if (token) {
         x = await handleAddExpoToken(data)(authDispatch);
       }
-      // setExpoPushToken(x.token);
       return x;
     } catch (error) {
       return null;
@@ -294,7 +265,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       category: ''
     }
     fetchInventoryData(data)(inventoryDispatch)
-    handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+    handleCatalogList(userData?.id as string)(inventoryDispatch)
   }, [])
 
   useEffect(() => {
@@ -302,61 +273,70 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
    
   }, [fetchInventoryDataCallBack])
 
-  const handleAuthStateChanged = useCallback(() => {
-    try {
-      const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
+//   const handleAuthStateChanged = useCallback(() => {
+//     try {
+//       const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
+//         auth,
+//         (user: any) => {
+//           if (user && user?.emailVerified) {
+//             console.log(user, 'uerser--------')
+//             setIsLogedIn(true)
+//             getLocalItem('userData').then((item: any) => {
+//               // getUserData(item?.id)(authDispatch)
+//             })
+//             getLocalItem('theme').then((item: any) => {
+//               setTheme(item)
+//             }).catch((err) =>{
+//               saveLocalItem('theme', "light").then(()=>{
+//                 setTheme('dark')
+//               }).catch(()=>{})
+//             })
+//           } else  {
+//             setIsLogedIn(false)
+//             saveLocalItem('userData', '').then(() => {})
+//           }
+//         }
+//       );
+//       return unsubscribeFromAuthStatuChanged;
+//     } catch (error) {
+//       console.log(error, 'errorr')
+//     }
+//   }, [auth]);
+
+//   useEffect(() => {
+//     handleAuthStateChanged()
+// }, [])
+
+//   useEffect(() => {
+//       handleAuthStateChanged()
+//   }, [handleAuthStateChanged])
+
+useEffect(() => {
+  getLocalItem('isLogedIn').then((islogin)=> {
+    if (islogin === 'true') {
+      onAuthStateChanged(
         auth,
         (user: any) => {
           if (user && user?.emailVerified) {
-            setIsverified(true)
+            
             getLocalItem('userData').then((item: any) => {
-              // getUserData(item?.id)(authDispatch)
+              setUserData(JSON.parse(item))
+              
+              getUserData(item?.id)(authDispatch).then(()=>{})
             })
-            getLocalItem('theme').then((item: any) => {
-              setTheme(item)
-            }).catch((err) =>{
-              saveLocalItem('theme', "light").then(()=>{
-                setTheme('dark')
-              }).catch(()=>{})
-            })
-          } else  {
-            setIsverified(false)
-            saveLocalItem('userData', '').then(() => {})
           }
-        }
-      );
-      return unsubscribeFromAuthStatuChanged;
-    } catch (error) {
-      console.log(error, 'errorr')
-    }
-  }, [auth]);
-
-  useEffect(() => {
-      handleAuthStateChanged()
-  }, [handleAuthStateChanged])
-
-
-  // useEffect(() => {
-  //   try {
+          else{
+            handleSignOut()(authDispatch)
+          }
+        })
       
-  //     const unsubscribeFromAuthStatuChanged = onAuthStateChanged(
-  //       auth,
-  //       (user: any) => {
-  //         if (user && user?.emailVerified) {
-  //           getLocalItem('userData').then((item: any) => {
-  //             getUserData(item?.id)
-  //           })
-  //         } else  {
-  //           saveLocalItem('userData', '').then(() => {})
-  //         }
-  //       }
-  //     );
-  //     return unsubscribeFromAuthStatuChanged;
-  //   } catch (error) {
-  //     console.log(error, 'errorr')
-  //   }
-    
-  // });
+    }
+  })
+  .catch((error)=>{
+    handleSignOut()(authDispatch)
+    console.log(error)
+  })
+}, [])
 
   const getLocation = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -385,14 +365,6 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   }, [curentLoc]);
 
   useEffect(() => {
-    // getAllItemDataStore();
-    // setRequestData(
-    //   allData?.filter((item) =>
-    //     item?.interestedParties?.includes(userData?.id as string)
-    //   )
-    // );
-    // setDonorData(allData?.filter((item) => item?.donor === userData?.id));
-    
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         setNotification(notification);
@@ -458,47 +430,6 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       setRefreshing(false);
     }, 2000);
   }, []);
-
-  // const fetchData = async (afterDoc?: DocumentData | null) => {
-  //   try {
-  //     let searchQuery;
-  //     const boardDB = collection(db, "Inventory");
-  //     if (afterDoc) {
-  //       const initQuery = query(
-  //         boardDB,
-  //         where("status", "==", "Available"),
-  //         orderBy("createdAt", "desc"),
-  //         limit(20)
-  //       );
-  //       searchQuery = query(initQuery, startAfter(afterDoc));
-  //     } else {
-  //       searchQuery = query(
-  //         boardDB,
-  //         where("status", "==", "Available"),
-  //         orderBy("createdAt", "desc"),
-  //         limit(20)
-  //       );
-  //     }
-
-  //     const snapshot = await getDocs(searchQuery);
-
-  //     if (!snapshot.empty) {
-  //       setData((prevData) => {
-  //         const uniqueIds = new Set(prevData.map((item) => item.id));
-  //         const newData = snapshot.docs
-  //           .map((doc) => ({ id: doc.id, ...doc.data() } as GridItem))
-  //           .filter((item) => !uniqueIds.has(item.id))
-  //           .filter((newItem) => newItem.interestedParties.length < 5);
-  //         return [...prevData, ...newData];
-  //       });
-  //       setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  //   setLoading(false);
-  // };
-
   const value = useMemo(
     () => ({
       authDispatch,
@@ -546,7 +477,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       alertTitle, 
       setAlertTitle,
       setTheme,
-      isVerified, setIsverified
+      isLogedIn, setIsLogedIn
     }),
     [
       authDispatch,
@@ -554,7 +485,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       inventoryState, 
       inventoryDispatch,
       fetchInventoryDataCallBack,
-      isVerified, setIsverified,
+      isLogedIn, setIsLogedIn,
       userData,
       setUserData,
       loading,

@@ -41,15 +41,10 @@ export default function DonationItemView() {
 
   const {
     theme,
-    loading,
     userData,
     inventoryState, inventoryDispatch,
     authDispatch,
     fetchInventoryDataCallBack,
-    setData,
-    setLoading,
-    setLastDoc,
-    authState,
     setAlertMessage,
     setAlertTitle,
     showAlert
@@ -88,28 +83,18 @@ export default function DonationItemView() {
     const res = await handleConfirmDelivery(data)(inventoryDispatch);
     if (res?.statusCode === 200) {
         fetchInventoryDataCallBack()
-        handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
-        getUserData(authState?.userData?.id as string)(authDispatch)
-        // setAlertMessage(res?.message as string)
-        // setAlertTitle("Delievery Confirmation")
-        // showAlert()
-        
-      // setLoading(false);
-      // setData([]);
-      // setLastDoc(null);
-      // fetchData();
-      // getAllItemDataStore();
-
-      getExpoToken(item?.donor as string).then((result) => {
-        const title = `Donation Confirmed! 📫`;
-        const message = `Thank you for your generous donation. The recipient has confirmed the collection of the item. Your kindness has made a difference.`;
-        if (result.statusCode === 200) {
-          const donorToken = result?.token;
-          sendExpoNotification(donorToken as string, title, message)
-            .then((result) => console.log(result, "successful"))
-            .catch((error) => console.error(error, "error"));
-        }
-      });
+        handleCatalogList(userData?.id as string)(inventoryDispatch)
+        getUserData(userData?.id as string)(authDispatch)
+        getExpoToken(item?.donor as string).then((result) => {
+          const title = `Donation Confirmed! 📫`;
+          const message = `Thank you for your generous donation. The recipient has confirmed the collection of the item. Your kindness has made a difference.`;
+          if (result.statusCode === 200) {
+            const donorToken = result?.token;
+            sendExpoNotification(donorToken as string, title, message)
+              .then((result) => console.log(result, "successful"))
+              .catch((error) => console.error(error, "error"));
+          }
+        });
     } else {
       handleDeliveryLocalReverse();
     }
@@ -123,8 +108,8 @@ export default function DonationItemView() {
     if ((item?.interestedParties as string[])?.length < 5) {
       const res = await handleRemoveInterest(data)(inventoryDispatch);
       if (res?.statusCode === 200) {
-        handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
-        getUserData(authState?.userData?.id as string)(authDispatch)
+        handleCatalogList(userData?.id as string)(inventoryDispatch)
+        getUserData(userData?.id as string)(authDispatch)
         getExpoToken(item?.donor as string).then((result) => {
           const title = `${
             (item?.interestedParties as string[])?.length > 1
@@ -204,8 +189,8 @@ export default function DonationItemView() {
       const res = await handlePotentialInterest(data)(inventoryDispatch);
       
       if (res?.statusCode === 200) {
-        handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
-        getUserData(authState?.userData?.id as string)(authDispatch)
+        handleCatalogList(userData?.id as string)(inventoryDispatch)
+        getUserData(userData?.id as string)(authDispatch)
         getExpoToken(item?.donor as string).then((result) => {
           const title = `${
             (item?.interestedParties as string[])?.length > 1
@@ -244,36 +229,30 @@ export default function DonationItemView() {
     await handleSingleItem(id as string)(inventoryDispatch).then((res) => {
       setLocalLoading(false)
       if (res?.statusCode === 200) {
-        handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
-        getUserData(authState?.userData?.id as string)(authDispatch)
+        handleCatalogList(userData?.id as string)(inventoryDispatch)
+        getUserData(userData?.id as string)(authDispatch)
         setItem(res.singleItem);
-        // setLoading(false);
       }
     });
   };
 
   useEffect(() => {
     setItem({})
-    // setTimeout(() => {
-    //   setLocalLoading(false)
-    // }, 1000);
     handleSingleItem(id as string)(inventoryDispatch).then((res) => {
-      // console.log(res, 'res')
       setLocalLoading(false)
-      handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
-      getUserData(authState?.userData?.id as string)(authDispatch)
+      handleCatalogList(userData?.id as string)(inventoryDispatch)
+      getUserData(userData?.id as string)(authDispatch)
       if (res?.statusCode === 200) {
         setItem(res.singleItem);
-        // setLoading(false);
       }
     });
     
    
   }, []);
-// console.log(item, 'item')
+
   return (
-    <SafeAreaView>
-      <ScrollView>
+    <SafeAreaView style={{ backgroundColor: theme === "dark" ? "#000000" : "#fff" }}>
+      <ScrollView style={{ backgroundColor: theme === "dark" ? "#000000" : "#fff" }}>
         <View style={styles.container}>
           {localLoading  ? <Loader /> :
           <>
@@ -283,7 +262,7 @@ export default function DonationItemView() {
               onPress={() => navigation.back()}
             >
               <Ionicons
-                name="ios-chevron-back-outline"
+                name="chevron-back-circle-sharp"
                 size={40}
                 color={theme === "dark" ? "#fff" : "black"}
               />
@@ -414,7 +393,6 @@ export default function DonationItemView() {
                             )}`}
                             icon={false}
                             color={theme === "dark" ? primaryYellow : "#000"}
-                            // isLoading={inventoryState?.loading}
                             theme={theme}
                           />
                         </>
@@ -469,7 +447,6 @@ export default function DonationItemView() {
                         title="Withdraw Interest"
                         icon={false}
                         color={theme === "dark" ? primaryRed : "gray"}
-                        // isLoading={inventoryState?.loading}
                         theme={theme}
                       />
 
@@ -487,7 +464,6 @@ export default function DonationItemView() {
                               color={
                                 theme === "dark" ? primaryYellow : "#7CDBB9"
                               }
-                              // isLoading={inventoryState?.loading}
                               theme={theme}
                             />
                             <View style={{ margin: 10 }}></View>
@@ -496,7 +472,6 @@ export default function DonationItemView() {
                               title={`Confirm Item is Recieved`}
                               icon={false}
                               color="#08B72F"
-                              // isLoading={inventoryState?.loading}
                               theme={theme}
                             />
                           </View>
@@ -532,7 +507,6 @@ export default function DonationItemView() {
                           title="I am Interested"
                           icon={false}
                           color={theme === "dark" ? primaryYellow : "black"}
-                          // isLoading={inventoryState?.loading}
                           theme={theme}
                         />
                       </>
@@ -573,10 +547,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   header: {
-    justifyContent: "space-between",
+    justifyContent: "center",
+    alignItems:'center',
     flexDirection: "row",
     marginBottom: 15,
     marginTop: 10,
+    height:50
   },
   lowerView: {
     padding: "5%",
@@ -597,7 +573,7 @@ const styles = StyleSheet.create({
   },
   back: {
     position: "absolute",
-    top: 0,
+    top: 5,
     left: "5%",
     zIndex: 1000,
   },

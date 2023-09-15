@@ -109,7 +109,7 @@ export default function ChatView() {
       <View
         style={[
           styles.container,
-          { backgroundColor: theme === "dark" ? "transparent" : "#fff" },
+          { backgroundColor: theme === "dark" ? "#000000" : "#ffffff" },
         ]}
       >
         <View style={styles.header}>

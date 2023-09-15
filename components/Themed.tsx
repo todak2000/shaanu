@@ -29,8 +29,6 @@ export function useThemeColor(
   colorName: keyof typeof Colors.light & keyof typeof Colors.dark
 ) {
   const { theme } = useStore()
-
-  // const theme = useColorScheme() ?? "light";
   const colorFromProps = props[theme];
 
   if (colorFromProps) {
@@ -43,7 +41,6 @@ export function useThemeColor(
 export function Text(props: TextProps) {
   const { theme } = useStore()
   const { style, lightColor, darkColor, ...otherProps } = props;
-  // const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
   const color = theme === "light" ? "#000000" : "#ffffff";
   return <DefaultText style={[{ color }, style]} {...otherProps} />;
 }
@@ -51,10 +48,6 @@ export function Text(props: TextProps) {
 export function View(props: ViewProps) {
   const { theme } = useStore()
   const { style, lightColor, darkColor, ...otherProps } = props;
-  // const backgroundColor = useThemeColor(
-  //   { light: lightColor, dark: darkColor },
-  //   "background"
-  // );
   const backgroundColor = theme === "light" ? "#ffffff" : "#000000";
 
   return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;

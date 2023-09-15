@@ -1,7 +1,8 @@
 import React from 'react';
-import { Modal, Text, View, TouchableOpacity, StyleSheet } from 'react-native';
-import { primaryRed, primaryYellow } from '../constants/Colors';
+import { Modal, TouchableOpacity, StyleSheet } from 'react-native';
+import { primaryRed } from '../constants/Colors';
 import { useStore } from '../app/store';
+import { View, Text } from './Themed';
 
 interface CustomAlertProps {
   title: string;
@@ -42,7 +43,6 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    // backgroundColor: "white",
     borderRadius: 20,
     padding: 35,
     alignItems: "center",

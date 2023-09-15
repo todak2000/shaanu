@@ -4,7 +4,6 @@ import { Text, View } from "../../components/Themed";
 import { useStore } from "../store";
 import Header from "../../components/Home/Header";
 import SearchBar from "../../components/Home/Search";
-import Loader from "../../components/Loader";
 import Categories, { categoryProps }  from "../../components/Home/Category";
 import GridList from "../../components/Home/GridList";
 import {

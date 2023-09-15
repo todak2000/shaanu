@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Wrapper from "../../components/Wrapper";
 import { Text, View } from "../../components/Themed";
 import { useStore } from "../store";
@@ -10,7 +10,7 @@ import { handleCatalogList } from "../db/apis";
 const title = "Catalog";
 
 function CatalogScreenView() {
-  const {inventoryState, authState, inventoryDispatch, theme, donorData, requestData, setRequestData, setDonorData, allData, userData } = useStore();
+  const {inventoryState, inventoryDispatch, theme, userData } = useStore();
   const [activeTab, setActiveTab] = useState("One");
   const [change, setChange] = useState<boolean>(false);
 
@@ -19,24 +19,12 @@ function CatalogScreenView() {
   };
 
   useEffect(() => {
-    handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
+    handleCatalogList(userData?.id as string)(inventoryDispatch)
   }, [change])
 
   useEffect(() => {
-    handleCatalogList(authState?.userData?.id as string)(inventoryDispatch)
-    // setRequestData(inventoryState.catalog?.recieverList);
-    // setDonorData(inventoryState?.catalog?.donorList);
+    handleCatalogList(userData?.id as string)(inventoryDispatch)
   }, [])
-
-//   const updateData = useCallback(() => {
-//     setRequestData(inventoryState.catalog?.recieverList);
-//     setDonorData(inventoryState?.catalog?.donorList);
-// }, [inventoryState.catalog])
-
-// useEffect(() => {
-//     updateData()
-// }, [updateData])
-
 
   const tabArr = [
     {

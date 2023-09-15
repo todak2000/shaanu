@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity} from "react-native";
+import { StyleSheet, TouchableOpacity} from "react-native";
 import Button from "../../components/Button";
 import { Formik, FormikHelpers } from "formik";
 import CustomTextInput from "../../components/TextInput";
 import { useStore } from "../store";
 import { handleSignUpAuth } from "../db/apis";
 import { SignupSchema } from "../utils/yup";
-import { primaryYellow } from "../../constants/Colors";
+import { primaryRed, primaryYellow } from "../../constants/Colors";
+import { getLocalItem } from "../utils/localStorage";
+import { useRouter } from "expo-router";
+import { View, Text } from "../../components/Themed";
+import CustomAlert from "../../components/CustomAlert";
+import Logo from "../../assets/images/svgs/logo";
 
 interface FormValues {
   firstname: string;
@@ -18,22 +23,14 @@ interface FormValues {
   [key: string]: string;
 }
 
-const SignupForm = ({
-  setScreen,
-}: {
-  setScreen: React.Dispatch<React.SetStateAction<number>>;
-}) => {
+const SignupForm = () => {
+  const router = useRouter()
   const {
-    loading,
-    setLoading,
     theme,
-    setUserData,
-    userData,
     registerForPushNotificationsAsync,
-    setExpoPushToken,
-    isRegistered,
     setAlertMessage,
     setAlertTitle,
+    alertVisible, hideAlert, alertTitle, alertMessage,
     showAlert,
     authState,
     authDispatch
@@ -41,33 +38,26 @@ const SignupForm = ({
 
   const [localLoading, setLocalLoading] = useState<boolean>(false)
   useEffect(() => {
-    if (authState.isRegistered && authState?.userData?.isVerified) {
-      setScreen(0);
-    } 
-    if (loading) {
-      setTimeout(() => {
-        setLoading(false)
-        setAlertMessage("Oops! an error occurred. Try again")
-        setAlertTitle("Network Issues!")
-        showAlert()
-       
-      }, 10000);
-    }
-  });
+    getLocalItem('isLogedIn').then((islogin)=> {
+      if (islogin === 'true') {
+        router.push('/onboarding/general')
+      }
+    })
+    .catch((error)=> console.log(error))
+  }, [])
+
 
   const handleSubmit = async (
     values: FormValues,
     actions: FormikHelpers<FormValues>
   ) => {
-    setScreen(2)
     setLocalLoading(true);
     actions.setSubmitting(false);
-  
+    
+
+   
     try {
       const token  = await registerForPushNotificationsAsync()
-      // console.log(token, 'token')
-
-      // setExpoPushToken(token as string);
       values.expoPushToken = token ? token : "";
   
       const res: any = await handleSignUpAuth(values)(authDispatch)
@@ -97,14 +87,18 @@ const SignupForm = ({
 
   return (
     <View style={styles.container}>
+      <CustomAlert
+          title={alertTitle}
+          message={alertMessage}
+          visible={alertVisible}
+          onClose={hideAlert}
+        />
+          <Logo color={primaryYellow} />
+          <Text style={styles.title}>Sign Up </Text>
+              <Text style={styles.subTitle}>Please get started already!</Text>
+      <View style={styles.form}>
       <Formik
         initialValues={{
-          // firstname: "Ola",
-          // lastname: "Bade",
-          // phoneNumber: "09876563512",
-          // password: "dada12345",
-          // email: "dada@dada.com",
-          // expoPushToken: "",
           firstname: "",
           lastname: "",
           phoneNumber: "",
@@ -184,8 +178,8 @@ const SignupForm = ({
           </View>
         )}
       </Formik>
-
-      <TouchableOpacity onPress={() => setScreen(1)}>
+      </View>
+      <TouchableOpacity onPress={() => router.push('/onboarding/signin')}>
       <Text style={[styles.redirect, {color: theme === 'dark' ? '#d0d0d0': '#232323',}]}>
           Already registered? <Text style={styles.yellow}>Sign in Here</Text>
         </Text>
@@ -197,8 +191,24 @@ const SignupForm = ({
 export default SignupForm;
 
 const styles = StyleSheet.create({
+  form: {
+    width: '90%',
+  },
   container: {
-    width: "90%",
+    flex: 1,
+    alignItems: "center",
+    width: '100%',
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 20,
+    fontFamily: "MuseoBold",
+  },
+  subTitle: {
+    color: primaryRed,
+    fontSize: 13,
+    marginBottom: 20,
+    fontFamily: "MuseoRegular",
   },
   middle: {
     marginTop: 40,

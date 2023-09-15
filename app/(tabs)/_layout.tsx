@@ -4,12 +4,14 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 import { Link, Tabs } from "expo-router";
-import { Pressable, useColorScheme } from "react-native";
-import Colors, { primaryYellow } from "../../constants/Colors";
-import OnboardingScreen from "../onboarding";
+import { Pressable } from "react-native";
+import { primaryYellow } from "../../constants/Colors";
 import { useStore } from "../store";
 import Loader from "../../components/Loader";
 import CustomAlert from "../../components/CustomAlert";
+import { getLocalItem } from "../utils/localStorage";
+import { useEffect } from "react";
+import { useRouter } from "expo-router";
 
 function TabBarIcon(props: { name: any; color: string }) {
   switch (props.name) {
@@ -46,13 +48,26 @@ function TabBarIcon(props: { name: any; color: string }) {
 }
 
 export default function TabLayout() {
-  const { authState, theme, alertTitle, alertMessage, alertVisible, hideAlert } = useStore();
-  if (!authState.isRegistered && !authState.loading) {
-    return <OnboardingScreen />;
-  } else if (!authState.isRegistered && authState.loading) {
+  const router = useRouter()
+  const { authState, theme, isLogedIn, setIsLogedIn, alertTitle, alertMessage, alertVisible, hideAlert } = useStore();
+  useEffect(() => {
+    getLocalItem('isLogedIn').then((islogin)=> {
+      
+      if (islogin === 'true') {
+        setIsLogedIn(true)
+      }
+      else{
+        setIsLogedIn(false)
+        router.push('/onboarding/signin')
+      }
+    })
+    .catch((error)=> console.log(error))
+  }, [])
+  
+  if (!isLogedIn) {
     return <Loader />;
-  }
- 
+  } 
+
   return (
     <>
     <CustomAlert
@@ -64,7 +79,7 @@ export default function TabLayout() {
     
     <Tabs
       screenOptions={{
-        tabBarStyle: {backgroundColor: theme === 'light' ? '#fff' : 'transparent', borderColor: theme === 'light' ? '#fff' : 'transparent'},
+        tabBarStyle: {backgroundColor: theme === 'light' ? '#fff' : '#000000', borderColor: theme === 'light' ? '#fff' : '#000000'},
         tabBarActiveTintColor: theme === "light" ? "#232323" : primaryYellow,
         tabBarLabelStyle:{ fontFamily:"MuseoRegular", marginBottom: 5, fontSize: 8}
       }}
@@ -74,21 +89,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           headerShown: false,
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    // color={theme === "light" ?  : ''}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />
         }}
       />
       <Tabs.Screen

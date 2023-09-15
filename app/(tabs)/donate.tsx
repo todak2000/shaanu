@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,
   StyleSheet,
   Platform,
   Image,
@@ -9,7 +8,7 @@ import {
   Pressable
 } from "react-native";
 import Button from "../../components/Button";
-import { Text, TouchableOpacity } from "../../components/Themed";
+import { Text, View, TouchableOpacity } from "../../components/Themed";
 import { Formik, Field, FormikHelpers } from "formik";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
@@ -39,7 +38,7 @@ const DonateScreen = () => {
   const [localLoading, setLocalLoading] = useState(false);
   const [isSelect, setIselect] = useState(false);
   const { 
-    theme, curentLoc, loading, setLoading, userData, getLocation,
+    theme, curentLoc, userData, getLocation,
     setAlertMessage, setAlertTitle, showAlert
    } =
     useStore();
@@ -78,7 +77,6 @@ const DonateScreen = () => {
   };
 
   const removeImage = (assetId: string) => {
-    console.log(assetId + " removed");
     setImages((prevImages) =>
       prevImages.filter((image) => image.assetId !== assetId)
     );
@@ -94,7 +92,6 @@ const DonateScreen = () => {
     
     else {
       setLocalLoading(true);
-      setLoading(true);
 
       const data: ItemProps = {
         category: values?.category ? values?.category : "Others",
@@ -119,7 +116,6 @@ const DonateScreen = () => {
           setAlertTitle("NetWork Issues!")
           showAlert()
         }
-        setLoading(false);
         setImages([]);
         actions.resetForm();
       });
@@ -131,7 +127,6 @@ const DonateScreen = () => {
     if (curentLoc === "Searching...") {
       getLocation();
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -144,13 +139,13 @@ const DonateScreen = () => {
     <SafeAreaView
       style={[
         styles.safeContainer,
-        { backgroundColor: theme === "dark" ? "transparent" : "#fff" },
+        { backgroundColor: theme === "dark" ? "#000000" : "#fff" },
       ]}
     >
       <ScrollView
         style={[
           styles.container,
-          { backgroundColor: theme === "dark" ? "transparent" : "#fff" },
+          { backgroundColor: theme === "dark" ? "#000000" : "#fff" },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -374,11 +369,11 @@ const DonateScreen = () => {
               )}
               <View style={styles.bottom}>
                 <Button
-                  onPress={() => (loading ? null : handleSubmit())}
+                  onPress={() => (localLoading ? null : handleSubmit())}
                   title="Submit"
                   icon={false}
                   color={theme === "dark" ? primaryYellow : "black"}
-                  isLoading={loading}
+                  isLoading={localLoading}
                   theme={theme}
                 />
               </View>

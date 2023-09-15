@@ -20,7 +20,7 @@ import {
 } from "@firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { ITEM_DELIVERY_SUCCESS, CLEAR_SINGLE_ITEM, GET_SINGLE_ITEM_SUCCESS, GET_SINGLE_ITEM_FAILURE, CATALOG_SUCCESS, CATALOG_FAILURE, INVENTORY_RECIVER_REMOVE, INVENTORY_RECIVER_ADD, INVENTORY_UPDATE_ADD, INVENTORY_UPDATE_REMOVE, UPDATE_NOTIFICATION_LOADING, UPDATE_NOTIFICATION_SUCCESS, UPDATE_NOTIFICATION_FAILURE, USERDATA_FAILURE, USERDATA_LOADING, USERDATA_SUCCESS, SIGNUP_LOADING, SIGNUP_FAILURE, SIGNUP_SUCCESS, CHANGE_PASSWORD_FAILURE, CHANGE_PASSWORD_LOADING, LOGIN_FAILURE, LOGIN_LOADING, LOGIN_SUCCESS, LOGOUT_SUCCESS, INVENTORY_LOADING, INVENTORY_SUCCESS, INVENTORY_FAILURE} from "../store/constants";
-import { getLocalItem, saveLocalItem } from "../utils/localStorage";
+import { removeLocalItem, saveLocalItem } from "../utils/localStorage";
 import { type Dispatch } from 'react'
 import {
   getAuth,
@@ -117,10 +117,10 @@ export const handleDeleteAccount =(userId: string)=> async(dispatch: Dispatch<an
     await setDoc(deleteRef, { isActive: false }, { merge: true });
     await deleteUser(user);
     dispatch({ type: LOGOUT_SUCCESS, loading: false })
+    await removeLocalItem().then(()=>console.log('local storage cleared'))
     statusCode = 200;
   } catch (err: any) {
     dispatch({ type: LOGIN_LOADING, loading: false })
-    console.log(err.message, "err.message");
     if (err.message === "Firebase: Error (auth/requires-recent-login).") {
       statusCode = 501;
     } else {
@@ -140,12 +140,9 @@ export const handleSignOut = ()=> async(dispatch: Dispatch<any>): Promise<number
     dispatch({ type: LOGOUT_SUCCESS, loading: false })
     console.log(logout, "logout");
     statusCode = 200;
-    // dispatch({ type: LOGOUT_SUCCESS })
     return statusCode;
   } catch (error: any) {
     statusCode = 501;
-    // dispatch({ type: LOGIN_LOADING, loading: false })
-    // dispatch({ type: LOGIN_FAILURE, error: error?.message })
     return statusCode;
   }
 };
@@ -153,10 +150,20 @@ export const handleSignOut = ()=> async(dispatch: Dispatch<any>): Promise<number
  // User Signup
  export const handleSignUpAuth = (
   data: any
-) => async (dispatch: Dispatch<any>): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
-// export const handleSignUpAuth = async (
-//   data: any
-// ): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
+  ) => async (dispatch: Dispatch<any>) => {
+// ) => async (dispatch: Dispatch<any>): Promise<{ statusCode: number; userData: userDataProps } | undefined> => {
+  let timeoutId;
+  let token, res;
+
+  // Start a 10-second timer
+const timer = new Promise((resolve, reject) => {
+  timeoutId = setTimeout(() => {
+    reject(new Error("Process timed out"));
+  }, 10000);
+});
+
+// Start the process
+const process = (async () => {
   try {
     dispatch({ type: SIGNUP_LOADING, loading: true })
     const userCredentials = await createUserWithEmailAndPassword(
@@ -164,8 +171,6 @@ export const handleSignOut = ()=> async(dispatch: Dispatch<any>): Promise<number
       data.email.toLocaleLowerCase(),
       data.password
     );
-
-    if (userCredentials.user) {
       let id = `SHA${Crypto.randomUUID()}`;
       const newUser = doc(db, "Users", id);
       const userData: userDataProps = {
@@ -195,9 +200,8 @@ export const handleSignOut = ()=> async(dispatch: Dispatch<any>): Promise<number
         },
         { merge: true }
       )
-      // .then(() => {
         dispatch({ type: SIGNUP_LOADING, loading: false })
-      // }).catch(async()=> await deleteUser(auth.currentUser));
+
       await sendEmailVerification(auth.currentUser);
       dispatch({
         type: SIGNUP_SUCCESS,
@@ -207,15 +211,45 @@ export const handleSignOut = ()=> async(dispatch: Dispatch<any>): Promise<number
         }
       })
       return { statusCode: 200, userData };
-    }
+    // }
   } catch (error: any) {
     let statusCode;
     switch (error.message) {
       case "Firebase: Error (auth/email-already-exists).":
-        statusCode = 409;
-        break;
       case "Firebase: Error (auth/email-already-in-use).":
-        statusCode = 409;
+        const checkDB = collection(db, "Users");
+        const checkQuery = query(
+          checkDB,
+          where("email", "==", data.email.toLocaleLowerCase())
+        );
+        const querySnapshot: any = await getDocs(checkQuery);
+        if (querySnapshot.docs.length <= 0 ) {
+          
+          let id = `SHA${Crypto.randomUUID()}`;
+          const newUser = doc(db, "Users", id);
+          await setDoc(
+            newUser,
+            {
+              firstname: data.firstname,
+              lastname: data.lastname,
+              phone: data.phoneNumber,
+              email: data.email.toLocaleLowerCase(),
+              isVerified: false,
+              isActive: true,
+              donated: increment(0),
+              recieved: increment(0),
+              expoPushToken: data.expoPushToken,
+            },
+            { merge: true }
+          )
+          statusCode = 200;
+          console.log('no exist dta')
+        }
+        else {
+          console.log('exist dta')
+          statusCode = 409;
+        }
+        
         break;
       default:
         statusCode = 501;
@@ -225,6 +259,20 @@ export const handleSignOut = ()=> async(dispatch: Dispatch<any>): Promise<number
     dispatch({ type: SIGNUP_FAILURE, error: error?.message })
     return { statusCode, userData: null };
   }
+})();
+// Wait for either the process to complete or the timer to expire
+try {
+  const result = await Promise.race([timer, process]);
+  clearTimeout(timeoutId);
+  return result;
+} catch (error: any) {
+  // Reverse the process here if needed
+  // ...
+  console.error(error.message, 'error');
+  throw error;
+}
+
+  
 };
 
 export  const getUserData = (id: string) => async(dispatch: Dispatch<any>)=> {
@@ -240,12 +288,12 @@ export  const getUserData = (id: string) => async(dispatch: Dispatch<any>)=> {
           dispatch({
             type: USERDATA_SUCCESS,
             payload: {
-              userData: updatedUser
+              userData: updatedUser,
             }
           })
           const user = JSON.stringify(updatedUser)
           saveLocalItem('userData', user).then(() => {})
-          // setUserData(updatedUser);
+          console.log('------successfully pull user data and upafe it --')
         }
       });
     }
@@ -536,7 +584,6 @@ export const handleSingleItem = (
     const singleItemRef = doc(db, "Inventory", id);
 
     const querySnapshot = await getDoc(singleItemRef);
-    // dispatch({ type: CLEAR_SINGLE_ITEM, loading: false })
     dispatch({ type: INVENTORY_LOADING, loading: false })
     if (querySnapshot.exists()) {
       singleItem = {
@@ -646,7 +693,6 @@ export const handlePotentialInterest = (data: {
   id: string;
   userId: string;
 }) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; message: string } | undefined> => {
-  // dispatch({ type: INVENTORY_LOADING, loading: true })
   try {
     const interestRef = doc(db, "Inventory", data.id);
     console.log(data.userId, "error handle interest")
@@ -667,7 +713,6 @@ export const handlePotentialInterest = (data: {
           newParty: data.userId
         }
       })
-      // console.log(res, 'potential interens')
       return {
         statusCode: 200,
         message: "Congratulations! We have duly noted your interest.",
@@ -692,7 +737,6 @@ export const handleRemoveInterest = (data: {
   id: string;
   userId: string;
 }) => async(dispatch: Dispatch<any>): Promise<{ statusCode: number; message: string } | undefined> => {
-  // dispatch({ type: INVENTORY_LOADING, loading: true })
   try {
     const boardRef = doc(db, "Inventory", data.id);
     const res = await setDoc(
@@ -771,24 +815,7 @@ export const handleCatalogList = (
           interestedParties: doc.data().interestedParties,
         });
       })
-      // querySnapshot.docs.map((doc: any) => {
-       
-      //   catalogList.push({
-      //     id: doc.id,
-      //     category: doc.data().category,
-      //     name: doc.data().name,
-      //     imageUrl: doc.data().imageUrl,
-      //     pickupAddress: doc.data().pickupAddress,
-      //     donor: doc.data().donor,
-      //     status: doc.data().status,
-      //     reciever: doc.data().reciever,
-      //     location: doc.data().location,
-      //     interestedParties: doc.data().interestedParties,
-      //   });
-      // });
     }
-    // console.log(recieverList, 'reciverlist -------------')
-    // console.log(donorList, 'donorlist -------------')
     dispatch({
       type: CATALOG_SUCCESS,
       payload: {
@@ -1052,42 +1079,6 @@ export const handleRemoveExpoToken = (userId: string) => async(dispatch: Dispatc
   }
 };
 
-
-// // Get user Data for Profile screen(Protected route)
-// export const handleUserData = async (
-//   userId: string
-// ): Promise<{ statusCode: number; userData: userDataProps } | any> => {
-//   let userData: userDataProps;
-//   try {
-//     const userDataRef = doc(db, "Users", userId);
-
-//     const querySnapshot = await getDoc(userDataRef);
-
-//     if (querySnapshot.exists()) {
-//       userData = {
-//         id: userId,
-//         firstname: querySnapshot.data().firstname,
-//         lastname: querySnapshot.data().lastname,
-//         phone: querySnapshot.data().phone,
-//         email: querySnapshot.data().email,
-//         isVerified: querySnapshot.data().emailVerified,
-//         isActive: querySnapshot.data().isActive,
-//         donated: querySnapshot.data().donated,
-//         recieved: querySnapshot.data().recieved,
-//         expoPushToken: querySnapshot?.data()?.expoPushToken || "",
-//       };
-//       return { statusCode: 200, userData };
-//     } else {
-//       console.log("No such document!");
-//       return { statusCode: 200, userData: { error: "No such User exist!" } };
-//     }
-//   } catch (error: any) {
-//     return {
-//       statusCode: 501,
-//       singleItem: { error: "Oops! an error occurred" },
-//     };
-//   }
-// };
 
 type fetchInventoryProps = {
   afterDoc?: DocumentData | null,

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { dateFormaterString } from '../../utils'
 import { ITEM_DELIVERY_SUCCESS, CLEAR_SINGLE_ITEM, GET_SINGLE_ITEM_SUCCESS, GET_SINGLE_ITEM_FAILURE, CATALOG_SUCCESS, INVENTORY_RECIVER_ADD, INVENTORY_RECIVER_REMOVE,INVENTORY_UPDATE_ADD, INVENTORY_UPDATE_REMOVE, INVENTORY_LOADING, INVENTORY_SUCCESS, INVENTORY_FAILURE, CATALOG_FAILURE } from '../constants'
 
 const InventoryReducer = (state: any, action: any) => {
@@ -86,15 +85,6 @@ const InventoryReducer = (state: any, action: any) => {
             : item
         ),
       };
-      // return {
-      //   ...state,
-      //   inventory: [...state.inventory, state.inventory.map(
-      //     (item: any) =>
-      // item.id === action.payload.id
-      //   ? { ...item, interestedParties: item.interestedParties.filter((party:any)=> party !== action.payload.removeParty) }
-      //   : item
-      //   ) ]
-      // }
     default:
       return state
   }
